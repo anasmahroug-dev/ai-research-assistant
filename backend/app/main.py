@@ -1,5 +1,9 @@
 from fastapi import FastAPI
 from app.routes import health, chat
+from app.database.database import engine, Base
+from app.models.message import Message
+
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
