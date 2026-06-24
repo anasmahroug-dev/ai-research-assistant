@@ -11,7 +11,7 @@ router = APIRouter()
 @router.post("/")
 def chat(request: ChatRequest, db: Session = Depends(get_db)):
     save_message(db, request.user_id, role="user", content=request.message)
-    response = generate_response(request.message)
+    response = generate_response(db, request.user_id, request.message)
     save_message(db, request.user_id, role="bot", content=response)
     
     return {        
