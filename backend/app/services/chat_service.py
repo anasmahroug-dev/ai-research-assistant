@@ -1,4 +1,5 @@
 from app.models.message import Message
+import requests
 
 
 chat_history = {}
@@ -14,27 +15,20 @@ def save_message(db, user_id: str, role: str, content: str):
 def generate_response(db, user_id: str,message: str):  
     
     history = get_conversation_history(db, user_id)
-    history_count = len(history)
     
-    msg = message.lower()
+    prompt = build_prompt(history, message)
     
     
-    if "hello" in msg:
-        response = "Hello!"
-    elif "history" in msg:
-        response = f"I remember {history_count} messages in our conversation."
-    elif "last message" in msg:
-        if history:
-            response = f"Your last message was: {history[-1].content}"
-        else:
-            response = "No history found."
-            
-    elif "help" in msg:
-        response = "I can help you with documents or summaries"
-    else:
-        response = f"You said: {message}"
- 
-    return response
+    response = requests.post("http://localhost:11434/api/generate",
+                             json={
+                                 "model": "mistral",
+                                   "prompt": prompt,
+                                   "stream": False
+                                   }
+                             )
+    data = response.json()
+    
+    return data["response"]
 
 
 def get_conversation_history(db, user_id: str):
@@ -42,7 +36,19 @@ def get_conversation_history(db, user_id: str):
     messages = (
         db.query(Message)
         .filter(Message.user_id == user_id)
+        .order_by(Message.id.desc())
+        .limit(10)
         .all()       
     )
-    return messages
+    return list(reversed(messages))
+
+def build_prompt(history, current_message):
+    conversation = ""
+    for msg in history:
+        role = "User" if msg.role == "user" else "Assistant"
+        conversation += f"{role}: {msg.content}\n"
+    conversation += f"\nUser: {current_message}\nAssistant:"
+    
+    return conversation
+        
 
