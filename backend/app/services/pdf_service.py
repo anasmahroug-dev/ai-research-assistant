@@ -1,4 +1,5 @@
 from app.models.pdf_document import PDFDocument
+from app.utils.text_chunker import chunk_text
 
 def save_pdf_document(db, user_id: str, filename: str, content: str):
     pdf = PDFDocument( user_id=user_id, filename=filename, content=content)
@@ -20,4 +21,32 @@ def build_pdf_context(pdfs):
         
         context += "\n\n"
         
+    return context
+
+
+def retrieve_relevant_chunks(pdfs, query):
+    relevant_chunks = []
+    
+    query_words = query.lower().split()
+    
+    for pdf in pdfs:
+        chunks = chunk_text(pdf.content)
+        
+        for chunk in chunks:
+            
+            chunk_lower = chunk.lower()
+            
+            if any(word in chunk_lower for word in query_words):
+                relevant_chunks.append(chunk)
+    
+    return relevant_chunks
+
+def build_rag_context(chunks):
+
+    context = ""
+
+    for chunk in chunks:
+
+        context += chunk + "\n\n"
+
     return context

@@ -1,5 +1,5 @@
 from app.models.message import Message
-from app.services.pdf_service import get_user_pdfs, build_pdf_context
+from app.services.pdf_service import get_user_pdfs, build_pdf_context, build_rag_context, retrieve_relevant_chunks
 import requests
 
 
@@ -17,7 +17,9 @@ def generate_response(db, user_id: str,message: str):
     
     pdfs = get_user_pdfs(db, user_id)
     
-    pdf_context = build_pdf_context(pdfs)
+    relevant_chunks = retrieve_relevant_chunks(pdfs, message)
+    
+    pdf_context = build_rag_context(relevant_chunks)
     
     conversation_prompt = build_prompt(history, message)
     prompt = f"""You are an AI research assistant.
