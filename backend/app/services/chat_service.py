@@ -1,8 +1,7 @@
 from app.models.message import Message
+from app.services.pdf_service import get_user_pdfs, build_pdf_context
 import requests
 
-
-chat_history = {}
 
 def save_message(db, user_id: str, role: str, content: str):
     msg = Message(user_id=user_id, role=role, content=content)
@@ -16,7 +15,21 @@ def generate_response(db, user_id: str,message: str):
     
     history = get_conversation_history(db, user_id)
     
-    prompt = build_prompt(history, message)
+    pdfs = get_user_pdfs(db, user_id)
+    
+    pdf_context = build_pdf_context(pdfs)
+    
+    conversation_prompt = build_prompt(history, message)
+    prompt = f"""You are an AI research assistant.
+    
+    PDF Context:
+    {pdf_context}
+    
+    Conversation History:
+    {conversation_prompt}
+    """
+    
+    
     
     
     response = requests.post("http://localhost:11434/api/generate",
@@ -37,7 +50,7 @@ def get_conversation_history(db, user_id: str):
         db.query(Message)
         .filter(Message.user_id == user_id)
         .order_by(Message.id.desc())
-        .limit(10)
+        .limit(20)
         .all()       
     )
     return list(reversed(messages))
