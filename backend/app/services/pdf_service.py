@@ -2,27 +2,16 @@ from app.models.pdf_document import PDFDocument
 from app.utils.text_chunker import chunk_text
 from app.services.embedding_service import create_embedding, cosine_similarity
 
-def save_pdf_document(db, user_id: str, filename: str, content: str):
-    pdf = PDFDocument( user_id=user_id, filename=filename, content=content)
+def save_pdf_document(db, conversation_id: int, filename: str, content: str):
+    pdf = PDFDocument(conversation_id=conversation_id, filename=filename, content=content)
     db.add(pdf)
     db.commit()
     db.refresh(pdf)
     return pdf
 
-def get_user_pdfs(db, user_id: str):
-    return (db.query(PDFDocument).filter(PDFDocument.user_id == user_id).all())
+def get_conversation_pdfs(db, conversation_id: int):
+    return (db.query(PDFDocument).filter(PDFDocument.conversation_id == conversation_id).all())
 
-def build_pdf_context(pdfs):
-    context = ""
-    
-    for pdf in pdfs:
-        context += f"\nPDF: {pdf.filename}\n"
-        
-        context += pdf.content[:3000]
-        
-        context += "\n\n"
-        
-    return context
 
 
 def retrieve_relevant_chunks(pdfs, query):

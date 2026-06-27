@@ -1,7 +1,11 @@
 from fastapi import FastAPI
-from app.routes import health, chat, pdf
+from app.routes import health, chat, pdf, conversation
 from app.database.database import engine, Base
-from app.models.message import Message
+from app.models import (
+    message,
+    pdf_document,
+    conversation as conversation_model
+)
 
 
 Base.metadata.create_all(bind=engine)
@@ -21,3 +25,7 @@ app.include_router(pdf.router,
                    prefix="/pdf",
                      tags=["PDF"]
                      )
+app.include_router(conversation.router,
+                   prefix ="/conversations",
+                   tags=["Conversations"]
+                   )

@@ -2,6 +2,7 @@ from fastapi import APIRouter, UploadFile, File, Depends
 from sqlalchemy.orm import Session
 from app.database.deps import get_db
 from app.services.pdf_service import save_pdf_document
+from app.services.conversation_service import get_conversation
 
 
 
@@ -13,7 +14,7 @@ router = APIRouter()
 
 @router.post("/upload")
 
-async def upload_pdf(user_id: str,
+async def upload_pdf(conversation_id: int,
                     file: UploadFile = File(...),
                      db: Session = Depends(get_db)):
     
@@ -25,10 +26,14 @@ async def upload_pdf(user_id: str,
         f.write(await file.read())
         
     extracted_text = extract_text_from_pdf(file_path)
-    
+    conversation = get_conversation(db, conversation_id)
+    if not conversation:
+        return {
+            "error": "Conversation not found"
+        }
     save_pdf_document(
     db,
-    user_id,
+    conversation_id,
     file.filename,
     extracted_text
     )

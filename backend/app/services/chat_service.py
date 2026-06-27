@@ -1,21 +1,21 @@
 from app.models.message import Message
-from app.services.pdf_service import get_user_pdfs, build_pdf_context, build_rag_context, retrieve_relevant_chunks
+from app.services.pdf_service import get_conversation_pdfs, build_rag_context, retrieve_relevant_chunks
 import requests
 
 
-def save_message(db, user_id: str, role: str, content: str):
-    msg = Message(user_id=user_id, role=role, content=content)
+def save_message(db, conversation_id, role: str, content: str):
+    msg = Message(conversation_id=conversation_id, role=role, content=content)
     db.add(msg)
     db.commit()
     db.refresh(msg)
     return msg
 
 
-def generate_response(db, user_id: str,message: str):  
+def generate_response(db, conversation_id: int, message: str):
     
-    history = get_conversation_history(db, user_id)
+    history = get_conversation_history(db, conversation_id)
     
-    pdfs = get_user_pdfs(db, user_id)
+    pdfs = get_conversation_pdfs(db, conversation_id)
     
     relevant_chunks = retrieve_relevant_chunks(pdfs, message)
     
@@ -46,11 +46,11 @@ def generate_response(db, user_id: str,message: str):
     return data["response"]
 
 
-def get_conversation_history(db, user_id: str):
+def get_conversation_history(db, conversation_id: int):
     
     messages = (
         db.query(Message)
-        .filter(Message.user_id == user_id)
+        .filter(Message.conversation_id == conversation_id)
         .order_by(Message.id.desc())
         .limit(20)
         .all()       
