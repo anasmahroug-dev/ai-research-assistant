@@ -1,17 +1,113 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
 import Sidebar from "@/components/Sidebar";
 import ChatWindow from "@/components/ChatWindow";
+import PdfSiderbar from "@/components/PdfSidebar";
+
+import {getConversations,
+  getMessages,
+  getPdfs,
+  sendMessage,
+  createConversation,
+  uploadPDF,
+} from "@/lib/api";
 
 
 
 export default function Home(){
+  
+  const userId = "consolas";
+
+  const [conversations, setConversations] = useState<any[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
+  const [pdfs, setPdfs] = useState<any[]>([]);
+  const [selectedConversation, setSelectedConversation] = useState<any>(null);
+  
+  useEffect(()=>{
+
+    async function loadConversations(){
+      const data =
+      await getConversations(userId);
+      setConversations(data);
+    }
+    loadConversations();
+
+
+  }, []);
+
+  async function handleSelectConversation(
+    conversation: any
+  ){
+    setSelectedConversation(conversation);
+
+    const messagesData = await getMessages(conversation.id);
+
+    setMessages(messagesData);
+
+    const pdfsData = 
+    await getPdfs(conversation.id);
+
+    setPdfs(pdfsData);
+
+  }
+
+  async function handleSendMessage(text: string){
+    if (!selectedConversation) return;
+    const userMessage = {role: "user",
+      message:text
+    };
+
+    setMessages((prev) => [
+      ...prev, userMessage]);
+  
+  const data = await sendMessage(selectedConversation.id, text);
+
+  const botMessage ={
+    role: "bot", message: data.response,
+  };
+
+  setMessages((prev) => [...prev, botMessage]);
+
+  }
+
+  async function handleNewConversation(){
+    const newConversation = await createConversation(userId);
+    setConversations((prev)=> [
+      newConversation,
+       ...prev,]);
+  }
+
+  async function handleUploadPdf(file: File){
+    if (!selectedConversation) return;
+
+    await uploadPDF(selectedConversation.id, file);
+
+    const updatedPdfs = await getPdfs(selectedConversation.id);
+
+    setPdfs(updatedPdfs);
+
+
+  }
+
   return (
-    <main className="flex h-screen">
-      <Sidebar />
-      <ChatWindow />
+    <main className="flex h-screen bg-zinc-800">
+      <Sidebar
+      conversations={conversations} 
+      onSelectConversation={handleSelectConversation}
+      onNewConversation={handleNewConversation}
+      userId= {userId}
+      />
+      <ChatWindow 
+      messages={messages}
+      onSend={handleSendMessage}
+      onUploadPdf={handleUploadPdf}
+      />
+      <PdfSiderbar
+      pdfs={pdfs} />
 
     </main>
-
-
   );
 
 

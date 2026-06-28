@@ -1,31 +1,50 @@
-export default function Sidebar(){
+ type Props = {
+    conversations: any[];
+    onSelectConversation: (conv: any) => void;
+    onNewConversation:() => void;
+    userId: string;
+    
+  }
 
-    const conversations = [
-        "Conversation Ia",
-        "Gestion de projet",
-        "Maths et physiques"
-    ];
 
-    return (<aside className="w-72 bg-zinc-900 text-white p-4">
-        <h2 className="text-xl font-bold mb-4">
-            Conversations
-        </h2>
+export default function Sidebar({conversations, onSelectConversation,onNewConversation, userId}: Props) {
+  
+  return (
+    <aside className="w-72 h-screen bg-zinc-900 text-white p-4 flex flex-col">
 
-           <button
-        className="mb-4 bg-white text-black p-3 rounded-xl font-medium hover:bg-zinc-300"
+      <button
+        onClick={onNewConversation}
+
+        className="mb-4 bg-white text-black p-3 rounded-xl cursor-pointer font-medium hover:bg-zinc-200"
       >
         + New Chat
       </button>
 
-        <div className="space-y-2">
-            {conversations.map((conv, index) => (
-                <button
-                key ={index}
-                className="w-full text-left p-3 rounded-lg bg-zinc-800 hover:bg-zinc-700"
-                >{conv}</button>
-            ))}
+      <h2 className="text-xl font-bold mb-4">
+        Conversations
+      </h2>
 
-        </div>
-    </aside>)
+      <div className="flex-1 overflow-y-auto space-y-2 pr-1">
+        {conversations.map((conv) => (
+          <button
+            key={conv.id}
 
+            onClick={()=>
+              onSelectConversation(conv)
+            }
+
+            className="w-full text-left p-3 rounded-lg cursor-pointer bg-zinc-800 hover:bg-zinc-700"
+          >
+            {conv.title}
+          </button>
+        ))}
+      </div>
+
+      <button
+        className="mt-4 bg-zinc-800 hover:bg-zinc-700 p-3 rounded-xl cursor-pointer text-left">
+      👤 {userId}
+      </button>
+
+    </aside>
+  );
 }

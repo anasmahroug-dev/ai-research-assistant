@@ -22,7 +22,7 @@ def generate_response(db, conversation_id: int, message: str):
     pdf_context = build_rag_context(relevant_chunks)
     
     conversation_prompt = build_prompt(history, message)
-    prompt = f"""You are an AI research assistant.
+    prompt = f"""You are a research assistant.
     
     PDF Context:
     {pdf_context}

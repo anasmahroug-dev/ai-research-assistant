@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 from app.database.deps import get_db
 from app.services.pdf_service import save_pdf_document
 from app.services.conversation_service import get_conversation
+from app.models.pdf_document import PDFDocument
+from fastapi import Form
 
 
 
@@ -14,7 +16,7 @@ router = APIRouter()
 
 @router.post("/upload")
 
-async def upload_pdf(conversation_id: int,
+async def upload_pdf(conversation_id: int = Form(...),
                     file: UploadFile = File(...),
                      db: Session = Depends(get_db)):
     
@@ -42,3 +44,16 @@ async def upload_pdf(conversation_id: int,
         "filename": file.filename,
         "text_preview": extracted_text[:1000]       
     }
+
+
+@router.get("/{conversation_id}")
+def get_pdfs(
+    conversation_id: int,
+    db: Session = Depends(get_db)
+):
+
+    pdfs = db.query(PDFDocument).filter(
+        PDFDocument.conversation_id == conversation_id
+    ).all()
+
+    return pdfs

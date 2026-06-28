@@ -11,7 +11,7 @@ def create_new_conversation(user_id: str, db: Session = Depends(get_db)):
     conversation = create_conversation(db, user_id)
     
     return {
-        "conversation_id": conversation.id,
+        "id": conversation.id,
         "title": conversation.title
     }
     

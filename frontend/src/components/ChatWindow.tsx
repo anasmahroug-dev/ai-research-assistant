@@ -1,15 +1,16 @@
-import ChatInput from './ChatInput';
+import ChatInput from './ChatInput';    
 
-export default function ChatWindow() {
-    const messages = [{ 
-        role: 'user', 
-        content: 'Hello, how are you?' 
-    },
-        { 
-            role: 'assistant', 
-            content: 'I am fine, thank you! How can I assist you today?' 
-        }
-    ];
+
+type Props ={
+    messages: any[];
+    onSend:(message: string) => void;
+    onUploadPdf:(file: File) => void;
+
+};
+
+export default function ChatWindow({messages, onSend, onUploadPdf}: Props) {
+    
+    
 
     return (
         <section className="flex-1 flex flex-col bg-zinc-950 text-white">
@@ -23,14 +24,14 @@ export default function ChatWindow() {
             }
             >
                  <div className="bg-zinc-800 p-4 rounded-xl max-w-xl">
-              {msg.content}
-            </div>
+                    {msg.message}
+                 </div>
 
             </div>
                 ))}
             </div>
 
-            <ChatInput />
+            <ChatInput onSend={onSend} onUploadPdf={onUploadPdf}/>
         </section>
 
     );
