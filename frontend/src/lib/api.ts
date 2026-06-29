@@ -72,3 +72,28 @@ export async function getPdfs(conversationId: number) {
 
   return response.json();
 }
+
+export async function deleteConversation(conversationId: number){
+
+    const response = await fetch(
+        `${API_URL}/conversations/${conversationId}`,
+        {
+            method: "DELETE",
+        }
+    );
+    return response.json();
+
+}
+
+export async function renameConversation(conversationId: number, title: string){
+    const response = await fetch(
+        `${API_URL}/conversations/${conversationId}?title=${encodeURIComponent(title)}`,
+        {
+            method: "PUT",
+        }
+    );
+
+    return response.json();
+
+
+}

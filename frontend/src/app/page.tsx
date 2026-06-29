@@ -12,6 +12,9 @@ import {getConversations,
   sendMessage,
   createConversation,
   uploadPDF,
+  deleteConversation,
+  renameConversation,
+
 } from "@/lib/api";
 
 
@@ -91,12 +94,47 @@ export default function Home(){
 
   }
 
+  async function handleDeleteConversation(conversationId: number){
+    await deleteConversation(conversationId);
+
+    setConversations((prev) => 
+      prev.filter(
+        (conv)=> conv.id !== conversationId));
+    
+    if (
+      selectedConversation?.id ===
+      conversationId
+    ) {
+
+      setSelectedConversation(null);
+      setMessages([]);
+      setPdfs([]);
+
+    }
+
+  }
+
+  async function handleRenameConversation(conversationId: number, title: string){
+
+    const updated = await renameConversation(conversationId, title);
+
+    setConversations((prev)=> 
+    prev.map((conv)=>
+    conv.id === conversationId
+      ? updated
+      : conv
+      )
+    );
+  }
+
   return (
     <main className="flex h-screen bg-zinc-800">
       <Sidebar
       conversations={conversations} 
       onSelectConversation={handleSelectConversation}
       onNewConversation={handleNewConversation}
+      onDeleteConversation={handleDeleteConversation}
+      onRenameConversation={handleRenameConversation}
       userId= {userId}
       />
       <ChatWindow 
