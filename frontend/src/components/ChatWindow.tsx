@@ -1,14 +1,15 @@
 import ChatInput from './ChatInput';    
-
+import {LoaderCircle} from "lucide-react";
 
 type Props ={
     messages: any[];
     onSend:(message: string) => void;
     onUploadPdf:(file: File) => void;
+    isLoading: boolean;
 
 };
 
-export default function ChatWindow({messages, onSend, onUploadPdf}: Props) {
+export default function ChatWindow({messages, onSend, onUploadPdf, isLoading}: Props) {
     
     
 
@@ -29,6 +30,31 @@ export default function ChatWindow({messages, onSend, onUploadPdf}: Props) {
 
             </div>
                 ))}
+            {isLoading && (
+                <div className="flex justify-start">
+                    
+                    <div
+                    
+                    className="
+                    flex 
+                    items-center 
+                    gap-2
+                    bg-zinc-800
+                    p-4
+                    rounded-xl
+                    max-w-xl">
+                        <LoaderCircle size={20}className="animate-spin text-zinc-400"/>
+                        <span className="text-zinc-400 text-sm">Thinking...</span>
+
+
+
+                    </div>
+                    
+                    
+                    
+                </div>
+            )}
+
             </div>
 
             <ChatInput onSend={onSend} onUploadPdf={onUploadPdf}/>

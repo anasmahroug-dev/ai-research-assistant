@@ -27,6 +27,7 @@ export default function Home(){
   const [messages, setMessages] = useState<any[]>([]);
   const [pdfs, setPdfs] = useState<any[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
   
   useEffect(()=>{
 
@@ -64,9 +65,14 @@ export default function Home(){
 
     setMessages((prev) => [
       ...prev, userMessage]);
+
+    setIsLoading(true);
+    
   
   const data = await sendMessage(selectedConversation.id, text);
 
+  setIsLoading(false);
+  
   const botMessage ={
     role: "bot", message: data.response,
   };
@@ -141,6 +147,7 @@ export default function Home(){
       messages={messages}
       onSend={handleSendMessage}
       onUploadPdf={handleUploadPdf}
+      isLoading={isLoading}
       />
       <PdfSiderbar
       pdfs={pdfs} />
