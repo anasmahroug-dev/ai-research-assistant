@@ -1,9 +1,11 @@
 from app.models.conversation import Conversation
 from app.models.message import Message
 from app.models.pdf_document import PDFDocument
+from datetime import datetime, timezone
+
 
 def create_conversation(db, user_id, title="New Chat"):
-    conversation = Conversation(user_id=user_id, title=title)
+    conversation = Conversation(user_id=user_id, title=title, updated_at=datetime.now(timezone.utc))
     
     db.add(conversation)
     

@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, DateTime
+from datetime import datetime, timezone
 from app.database.database import Base
 
 class Message(Base):
@@ -11,3 +12,5 @@ class Message(Base):
     role = Column(String)
     
     content = Column(String)
+    
+    created_at = Column(DateTime, default=lambda:datetime.now(timezone.utc))

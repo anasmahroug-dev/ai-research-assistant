@@ -1,4 +1,6 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, DateTime
+from datetime import datetime, timezone  
+
 
 from app.database.database import Base
 
@@ -15,5 +17,9 @@ class Conversation(Base):
     user_id = Column(String)
    
     title = Column(String)
+    
+    updated_at = Column(DateTime, default =lambda:datetime.now(timezone.utc))
+    
+    
     
     

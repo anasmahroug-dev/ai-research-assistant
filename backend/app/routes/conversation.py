@@ -18,7 +18,7 @@ def create_new_conversation(user_id: str, db: Session = Depends(get_db)):
     
 @router.get("/{user_id}")
 def get_user_conversations(user_id: str, db: Session = Depends(get_db)):
-    conversations = db.query(Conversation).filter(Conversation.user_id == user_id).all()
+    conversations = (db.query(Conversation).filter(Conversation.user_id == user_id).order_by(Conversation.updated_at.desc()).all())
     
     return conversations
 

@@ -1,4 +1,6 @@
 from app.models.message import Message
+from app.models.conversation import Conversation
+from datetime import datetime, timezone
 from app.services.pdf_service import get_conversation_pdfs, build_rag_context, retrieve_relevant_chunks
 import requests
 
@@ -6,6 +8,11 @@ import requests
 def save_message(db, conversation_id, role: str, content: str):
     msg = Message(conversation_id=conversation_id, role=role, content=content)
     db.add(msg)
+    conversation = (db.query(Conversation).filter(Conversation.id == conversation_id).first())
+    
+    if conversation:
+        conversation.updated_at = (datetime.now(timezone.utc))
+        
     db.commit()
     db.refresh(msg)
     return msg
