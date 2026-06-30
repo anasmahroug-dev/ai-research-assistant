@@ -1,4 +1,5 @@
  import { useState } from "react";
+ import {Pencil, Trash2, UserIcon, Plus} from "lucide-react";
  
  type Props = {
     conversations: any[];
@@ -25,9 +26,10 @@ useState("");
       <button
         onClick={onNewConversation}
 
-        className="mb-4 bg-white text-black p-3 rounded-xl cursor-pointer font-medium hover:bg-zinc-200"
+        className="flex items-center gap-2 mb-4 bg-white text-black p-3 rounded-xl cursor-pointer font-medium hover:bg-zinc-200"
       >
-        + New Chat
+        <Plus size={16}/> New Chat
+        
       </button>
 
       <h2 className="text-xl font-bold mb-4">
@@ -83,7 +85,7 @@ useState("");
                   className="cursor-pointer
                   hover:bg-zinc-800
                   rounded-lg"
-                  >✏️</button>
+                  ><Pencil size={16}/></button>
 
                   <button 
                   onClick={(e) => {
@@ -100,7 +102,7 @@ useState("");
                   className="cursor-pointer
                   hover:bg-zinc-800
                   rounded-lg"  
-                  >🗑️</button>
+                  ><Trash2 size={16}/></button>
 
                 </div>
                 </>
@@ -112,8 +114,8 @@ useState("");
       </div>
 
       <button
-        className="mt-4 bg-zinc-800 hover:bg-zinc-700 p-3 rounded-xl cursor-pointer text-left">
-      👤 {userId}
+        className="flex items-center gap-5 mt-4 bg-zinc-800 hover:bg-zinc-700 p-3 rounded-xl cursor-pointer text-left">
+       <UserIcon size={32}/>{userId}
       </button>
 
     </aside>

@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { ArrowLeft, ArrowRight, FileText } from "lucide-react";
+
+
 
 type Props = {
   pdfs: any[];
@@ -17,9 +20,9 @@ export default function PdfSidebar({pdfs}: Props) {
       {}
       <button
         onClick={() => setOpen(!open)}
-        className="h-12 w-12 bg-zinc-800 text-white hover:bg-zinc-700"
+        className="flex items-center justify-center h-12 w-8 bg-zinc-800 text-white hover:bg-zinc-700"
       >
-        {open ? "→" : "←"}
+        {open ? <ArrowRight size={20}/> : <ArrowLeft size={20}/>}
       </button>
 
       {}
@@ -44,6 +47,9 @@ export default function PdfSidebar({pdfs}: Props) {
             <button
               key={pdf.id}
               className="
+                flex
+                items-center
+                gap-2
                 w-full
                 text-left
                 bg-zinc-800
@@ -54,7 +60,7 @@ export default function PdfSidebar({pdfs}: Props) {
                 transition
               "
             >
-              📄 {pdf.filename}
+              <FileText size={16}/> {pdf.filename}
             </button>
           ))}
 

@@ -1,6 +1,7 @@
 "use client";
 
 import {useState} from "react";
+import {Paperclip, Send} from "lucide-react";
 
 type Props ={
 onSend:(message: string) => void;
@@ -29,9 +30,12 @@ export default function ChatInput({onSend, onUploadPdf}: Props) {
       onSubmit={handleSubmit}
       className="flex gap-2">
          <label
-          className="bg-zinc-800 px-4 py-3 rounded-xl cursor-pointer hover:bg-zinc-700"
+          className="flex items-center gap-2 bg-zinc-800 px-4 py-3 rounded-xl cursor-pointer hover:bg-zinc-700"
         >
-          📎 Upload pdf
+          <div className="flex items-center gap-2">
+            <Paperclip size={18} />
+              Upload PDF
+          </div>
 
           <input
             type="file"
@@ -61,9 +65,9 @@ export default function ChatInput({onSend, onUploadPdf}: Props) {
         />
 
         <button
-          className="bg-white text-black px-6 rounded-xl cursor-pointer"
+          className="flex items-center gap-2 bg-white text-black px-6 rounded-xl cursor-pointer"
         >
-          Send
+          <Send size={16}/>Send
         </button>
       </form>
     </div>
