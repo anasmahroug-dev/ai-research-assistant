@@ -45,7 +45,16 @@ export default function PdfSidebar({pdfs}: Props) {
 
           {pdfs.map((pdf) => (
             <button
+
+
               key={pdf.id}
+
+              onClick={() => {
+                window.open(`http://localhost:8000/uploads/${pdf.filename}`,
+                  "_blank"
+                );
+              }}
+
               className="
                 flex
                 items-center

@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from app.routes import health, chat, pdf, conversation
+from fastapi.staticfiles import StaticFiles
 from app.database.database import engine, Base
 from app.models import (
     message,
@@ -14,6 +15,10 @@ from fastapi.middleware.cors import CORSMiddleware
 
 
 app = FastAPI()
+
+app.mount("/uploads",
+          StaticFiles(directory="uploads"),
+          name="uploads")
 
 app.add_middleware(
     CORSMiddleware,
