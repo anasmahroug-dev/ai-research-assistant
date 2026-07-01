@@ -58,10 +58,22 @@ export default function Home(){
   }
 
   async function handleSendMessage(text: string){
-    if (!selectedConversation) return;
+    let conversation = selectedConversation;
+    if (!conversation){
+      conversation = await createConversation(userId);
+    
+
+    setConversations((prev)=> [conversation, ...prev]);
+
+    setSelectedConversation(conversation);
+    }
+
+
     const userMessage = {role: "user",
       message:text
     };
+
+
 
     setMessages((prev) => [
       ...prev, userMessage]);
@@ -69,7 +81,7 @@ export default function Home(){
     setIsLoading(true);
     
   
-  const data = await sendMessage(selectedConversation.id, text);
+  const data = await sendMessage(conversation.id, text);
 
   setIsLoading(false);
   
@@ -89,11 +101,19 @@ export default function Home(){
   }
 
   async function handleUploadPdf(file: File){
-    if (!selectedConversation) return;
+    let conversation = selectedConversation;
 
-    await uploadPDF(selectedConversation.id, file);
+    if (!conversation){
+      conversation = await createConversation(userId);
+      setConversations((prev)=> [conversation, ...prev]);
+      setSelectedConversation(conversation);
+    }
 
-    const updatedPdfs = await getPdfs(selectedConversation.id);
+
+
+    await uploadPDF(conversation.id, file);
+
+    const updatedPdfs = await getPdfs(conversation.id);
 
     setPdfs(updatedPdfs);
 
