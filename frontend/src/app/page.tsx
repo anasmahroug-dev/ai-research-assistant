@@ -113,6 +113,11 @@ export default function Home(){
     setConversations((prev)=> [
       newConversation,
        ...prev,]);
+    
+    setSelectedConversation(newConversation);
+    
+    setMessages([]);
+    setPdfs([]);
   }
 
   async function handleUploadPdf(file: File){
