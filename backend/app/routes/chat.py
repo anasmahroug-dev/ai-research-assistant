@@ -2,16 +2,20 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.models.message import Message
 
+from fastapi.responses import StreamingResponse
+import json
+
+
 
 from app.models.chat import ChatRequest
-from app.services.chat_service import generate_response, save_message
+from app.services.chat_service import generate_response, save_message, generate_response_stream
 from app.services.conversation_service import get_conversation
 from app.database.deps import get_db
 
 router = APIRouter()
 
 @router.post("/")
-def chat(request: ChatRequest, db: Session = Depends(get_db)):
+async def chat(request: ChatRequest, db: Session = Depends(get_db)):
     conversation = get_conversation(db, request.conversation_id)
     if not conversation:
         return {
@@ -19,12 +23,10 @@ def chat(request: ChatRequest, db: Session = Depends(get_db)):
         }
         
     save_message(db, request.conversation_id, role="user", content=request.message)
-    response = generate_response(db, request.conversation_id, request.message)
-    save_message(db, request.conversation_id, role="bot", content=response)
+
     
-    return {        
-        "response" : response
-    }
+    return StreamingResponse(generate_response_stream(db, request.conversation_id, request.message), 
+                             media_type="text/plain")
 
 @router.get("/history/{conversation_id}")
 def get_history(conversation_id: int, db: Session = Depends(get_db)):

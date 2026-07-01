@@ -9,11 +9,11 @@ import PdfSiderbar from "@/components/PdfSidebar";
 import {getConversations,
   getMessages,
   getPdfs,
-  sendMessage,
   createConversation,
   uploadPDF,
   deleteConversation,
   renameConversation,
+  sendMessageStream,
 
 } from "@/lib/api";
 
@@ -78,20 +78,35 @@ export default function Home(){
     setMessages((prev) => [
       ...prev, userMessage]);
 
-    setIsLoading(true);
+    
     
   
-  const data = await sendMessage(conversation.id, text);
 
-  setIsLoading(false);
+  
   
   const botMessage ={
-    role: "bot", message: data.response,
+    role: "bot", message: ""
   };
+
 
   setMessages((prev) => [...prev, botMessage]);
 
+
+  await sendMessageStream(conversation.id, text, (chunk) => {
+    setMessages((prev) => {
+      const updated = [...prev];
+      const lastMessage = updated[updated.length -1];
+      updated[updated.length -1] = {...lastMessage,
+        message: lastMessage.message + chunk
+      };
+      return updated;
+  
+  });
+
   }
+);
+  
+}
 
   async function handleNewConversation(){
     const newConversation = await createConversation(userId);
