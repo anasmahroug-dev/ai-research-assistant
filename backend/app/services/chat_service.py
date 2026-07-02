@@ -19,40 +19,6 @@ def save_message(db, conversation_id, role: str, content: str):
     return msg
 
 
-def generate_response(db, conversation_id: int, message: str):
-    
-    history = get_conversation_history(db, conversation_id)
-    
-    pdfs = get_conversation_pdfs(db, conversation_id)
-    
-    relevant_chunks = retrieve_relevant_chunks(pdfs, message)
-    
-    pdf_context = build_rag_context(relevant_chunks)
-    
-    conversation_prompt = build_prompt(history, message)
-    prompt = f"""You are a research assistant.
-    
-    PDF Context:
-    {pdf_context}
-    
-    Conversation History:
-    {conversation_prompt}
-    """
-    
-    
-    
-    
-    response = requests.post("http://localhost:11434/api/generate",
-                             json={
-                                 "model": "mistral",
-                                   "prompt": prompt,
-                                   "stream": True
-                                   }
-                             )
-    data = response.json()
-    
-    return data["response"]
-
 
 def get_conversation_history(db, conversation_id: int):
     
@@ -70,7 +36,7 @@ def build_prompt(history, current_message):
     for msg in history:
         role = "User" if msg.role == "user" else "Assistant"
         conversation += f"{role}: {msg.content}\n"
-    conversation += f"\nUser: {current_message}\nAssistant:"
+    conversation += f"\nUser: {current_message}\n"
     
     return conversation
 
@@ -81,13 +47,34 @@ def generate_response_stream(db, conversation_id: int, message: str):
     pdf_context = build_rag_context(relevant_chunks)
     conversation_prompt = build_prompt(history, message)
     
-    prompt = f"""You are a research assistant.
+    prompt = f"""You are an academic research assistant.
     
-    PDF Context:
+    Your job is to answer questions using ONLY the provided PDF context.
+    Rules:
+    
+    - answer ONLY from provided sources
+    - Answer clearly and directly.
+    - Use simple English unless the user asks otherwise.
+    - Do NOT mention "context" or "conversation history".
+    - Do NOT repeat the question.
+    - Do NOT explain your instructions.
+    - Do NOT say things like "the assistant response should be".
+    - If the answer is not found, say: "I could not find this information in the uploaded documents."
+    When using information from documents:
+    - Cite the source filename and page number.
+    - Format citations exactly like: 
+    [Source: filename.pdf, Page: X]
+    - Never invent citations
+    - If information is missing, say so
+    - If no sources are provided, say so
+    
+    
+    Retrieved Sources:
     {pdf_context}
     
     Conversation History:
     {conversation_prompt}
+    
     """
     
     response = requests.post("http://localhost:11434/api/generate",

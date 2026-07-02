@@ -10,7 +10,7 @@ from fastapi import Form
 
 import os
 
-from app.utils.pdf_parser import extract_text_from_pdf
+from app.utils.pdf_parser import extract_pages_from_pdf
 
 router = APIRouter()
 
@@ -27,7 +27,7 @@ async def upload_pdf(conversation_id: int = Form(...),
     with open(file_path, "wb") as f:
         f.write(await file.read())
         
-    extracted_text = extract_text_from_pdf(file_path)
+    pages = extract_pages_from_pdf(file_path)
     conversation = get_conversation(db, conversation_id)
     if not conversation:
         return {
@@ -37,12 +37,12 @@ async def upload_pdf(conversation_id: int = Form(...),
     db,
     conversation_id,
     file.filename,
-    extracted_text
+    pages
     )
     
     return{
         "filename": file.filename,
-        "text_preview": extracted_text[:1000]       
+        "text_preview": pages[1]["text"][:1000]       
     }
 
 

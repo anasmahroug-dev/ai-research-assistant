@@ -1,8 +1,8 @@
 from app.models.pdf_document import PDFDocument
-from app.utils.text_chunker import chunk_text
+from app.utils.text_chunker import chunk_pages
 from app.services.embedding_service import create_embedding, cosine_similarity
 
-def save_pdf_document(db, conversation_id: int, filename: str, content: str):
+def save_pdf_document(db, conversation_id: int, filename: str, content: list):
     pdf = PDFDocument(conversation_id=conversation_id, filename=filename, content=content)
     db.add(pdf)
     db.commit()
@@ -16,24 +16,27 @@ def get_conversation_pdfs(db, conversation_id: int):
 
 def retrieve_relevant_chunks(pdfs, query):
     
-    
     query_embedding = create_embedding(query)
     scored_chunks = []
     
-     
     for pdf in pdfs:
-        chunks = chunk_text(pdf.content)
+        chunks = chunk_pages(pdf.content)
         
         for chunk in chunks:
             
             
-            chunk_embedding = create_embedding(chunk)
+            chunk_embedding = create_embedding(chunk["text"])
             score = cosine_similarity(query_embedding, chunk_embedding)
             
-            scored_chunks.append((score, chunk))
-    scored_chunks.sort(key=lambda x: x[0], reverse=True)
+            scored_chunks.append({
+                
+                "score": score, 
+                "text": chunk["text"],
+                "page": chunk["page"],
+                "filename": pdf.filename})
+            
     
-    top_chunks = [chunk for score, chunk in scored_chunks[:5]]
+    top_chunks = sorted(scored_chunks, key=lambda x: x["score"], reverse=True)[:5]
     
             
     return top_chunks
@@ -44,6 +47,17 @@ def build_rag_context(chunks):
 
     for chunk in chunks:
 
-        context += chunk + "\n\n"
+        context += f"""
+        Source:
+        {chunk["filename"]}
+
+        Page:
+        {chunk["page"]}
+
+        Content:
+        {chunk["text"]}
+
+        ---
+        """
 
     return context

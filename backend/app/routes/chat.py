@@ -8,7 +8,7 @@ import json
 
 
 from app.models.chat import ChatRequest
-from app.services.chat_service import generate_response, save_message, generate_response_stream
+from app.services.chat_service import save_message, generate_response_stream
 from app.services.conversation_service import get_conversation
 from app.database.deps import get_db
 

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text
+from sqlalchemy import Column, Integer, String, Text, JSON
 from app.database.database import Base
 
 
@@ -11,5 +11,5 @@ class PDFDocument(Base):
     
     filename = Column(String)
     
-    content = Column(Text)
+    content = Column(JSON)
     
