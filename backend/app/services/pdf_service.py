@@ -36,8 +36,20 @@ def retrieve_relevant_chunks(pdfs, query):
                 "filename": pdf.filename})
             
     
-    top_chunks = sorted(scored_chunks, key=lambda x: x["score"], reverse=True)[:5]
+    top_chunks = sorted(scored_chunks, key=lambda x: x["score"], reverse=True)[:10]
     
+    print("\nTOP CHUNKS:\n")
+    
+    for chunk in top_chunks:
+
+        print(f"PAGE: {chunk['page']} | SCORE: {chunk['score']}")
+
+        print(chunk["text"][:300])
+
+        print("\n-----------------\n")
+
+
+
             
     return top_chunks
 
@@ -48,16 +60,14 @@ def build_rag_context(chunks):
     for chunk in chunks:
 
         context += f"""
-        Source:
-        {chunk["filename"]}
+        
+        [DOCUMENT]
+        File: {chunk["filename"]}
+        Page: {chunk["page"]}
 
-        Page:
-        {chunk["page"]}
-
-        Content:
         {chunk["text"]}
 
-        ---
+        [/DOCUMENT]
         """
 
     return context
