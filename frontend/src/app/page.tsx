@@ -17,6 +17,15 @@ import {getConversations,
 
 } from "@/lib/api";
 
+import dynamic from "next/dynamic";
+
+const PDFViewer = dynamic(
+  () => import("@/components/PDFViewer"),
+  {
+    ssr: false,
+  }
+);
+
 
 
 export default function Home(){
@@ -28,6 +37,8 @@ export default function Home(){
   const [pdfs, setPdfs] = useState<any[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedPdf, setSelectedPdf] = useState<string | null>(null);
+  const [selectedPage, setSelectedPage] = useState(1);
   
   useEffect(()=>{
 
@@ -37,6 +48,10 @@ export default function Home(){
       setConversations(data);
     }
     loadConversations();
+
+    setSelectedPdf("http://localhost:8000/uploads/Self-Study Reconsidered The Hidden Fragility of.pdf");
+
+
 
 
   }, []);
@@ -191,6 +206,13 @@ export default function Home(){
       />
       <PdfSiderbar
       pdfs={pdfs} />
+
+      {selectedPdf && (
+        <PDFViewer
+          fileUrl={selectedPdf}
+          pageNumber={selectedPage}
+        />
+      )}
 
     </main>
   );
