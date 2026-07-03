@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import ChatWindow from "@/components/ChatWindow";
 import PdfSiderbar from "@/components/PdfSidebar";
+import MessageContent from "@/components/MessageContent";
+
 
 import {getConversations,
   getMessages,
@@ -38,7 +40,7 @@ export default function Home(){
   const [selectedConversation, setSelectedConversation] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPdf, setSelectedPdf] = useState<string | null>(null);
-  const [selectedPage, setSelectedPage] = useState(1);
+  const [selectedPages, setSelectedPages] = useState<number[]>([]);
   
   useEffect(()=>{
 
@@ -48,10 +50,6 @@ export default function Home(){
       setConversations(data);
     }
     loadConversations();
-
-    setSelectedPdf("http://localhost:8000/uploads/Self-Study Reconsidered The Hidden Fragility of.pdf");
-
-
 
 
   }, []);
@@ -93,19 +91,12 @@ export default function Home(){
     setMessages((prev) => [
       ...prev, userMessage]);
 
-    
-    
-  
-
-  
-  
   const botMessage ={
     role: "bot", message: ""
   };
 
 
   setMessages((prev) => [...prev, botMessage]);
-
 
   await sendMessageStream(conversation.id, text, (chunk) => {
     setMessages((prev) => {
@@ -203,16 +194,23 @@ export default function Home(){
       onSend={handleSendMessage}
       onUploadPdf={handleUploadPdf}
       isLoading={isLoading}
+      onCitationClick={(filename, pages) => {
+        setSelectedPdf(`http://localhost:8000/uploads/${encodeURIComponent(filename)}`);
+        setSelectedPages(pages);
+      }}
       />
-      <PdfSiderbar
-      pdfs={pdfs} />
+      
 
       {selectedPdf && (
-        <PDFViewer
-          fileUrl={selectedPdf}
-          pageNumber={selectedPage}
+        <PDFViewer 
+         fileUrl={selectedPdf}
+          pages={selectedPages}
+          onClose={()=> setSelectedPdf(null)}
         />
-      )}
+          )}
+
+      <PdfSiderbar
+      pdfs={pdfs} />
 
     </main>
   );

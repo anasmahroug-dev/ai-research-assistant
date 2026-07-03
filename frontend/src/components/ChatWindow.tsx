@@ -1,4 +1,5 @@
 import ChatInput from './ChatInput';    
+import MessageContent from "./MessageContent";
 import {LoaderCircle} from "lucide-react";
 
 type Props ={
@@ -6,10 +7,10 @@ type Props ={
     onSend:(message: string) => void;
     onUploadPdf:(file: File) => void;
     isLoading: boolean;
+    onCitationClick?: (filename: string, pages: number[]) => void;
+    };
 
-};
-
-export default function ChatWindow({messages, onSend, onUploadPdf, isLoading}: Props) {
+export default function ChatWindow({messages, onSend, onUploadPdf, isLoading, onCitationClick}: Props) {
     
     
 
@@ -25,7 +26,10 @@ export default function ChatWindow({messages, onSend, onUploadPdf, isLoading}: P
             }
             >
                  <div className="bg-zinc-800 p-4 rounded-xl max-w-xl">
-                    {msg.message}
+                    <MessageContent
+                        content={msg.message}
+                        onCitationClick={onCitationClick}
+                        />
                  </div>
 
             </div>
