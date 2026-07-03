@@ -1,3 +1,5 @@
+from dotenv import load_dotenv
+load_dotenv()
 from fastapi import FastAPI
 from app.routes import health, chat, pdf, conversation
 from fastapi.staticfiles import StaticFiles

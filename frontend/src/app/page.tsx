@@ -135,8 +135,6 @@ export default function Home(){
       setSelectedConversation(conversation);
     }
 
-
-
     await uploadPDF(conversation.id, file);
 
     const updatedPdfs = await getPdfs(conversation.id);
@@ -200,7 +198,6 @@ export default function Home(){
       }}
       />
       
-
       {selectedPdf && (
         <PDFViewer 
          fileUrl={selectedPdf}
@@ -214,7 +211,5 @@ export default function Home(){
 
     </main>
   );
-
-
 
 }

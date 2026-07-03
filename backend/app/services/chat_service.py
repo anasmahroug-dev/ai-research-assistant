@@ -1,6 +1,7 @@
 from app.models.message import Message
 from app.models.conversation import Conversation
 from datetime import datetime, timezone
+from app.services.llm.factory import get_llm_provider
 from app.services.pdf_service import get_conversation_pdfs, build_rag_context, retrieve_relevant_chunks
 import requests
 import json
@@ -54,6 +55,7 @@ def generate_response_stream(db, conversation_id: int, message: str):
     ====================
 
     - Answer ONLY from provided sources.
+    - Don't take questions too literally, the exact question doesn't have to exist in the sources for you to answer it.
     - Infer answers when the evidence is clear.
     - Answer clearly and directly.
     - Use simple English unless the user asks otherwise.
@@ -67,7 +69,8 @@ def generate_response_stream(db, conversation_id: int, message: str):
     - Do NOT say things like "the assistant response should be".
     - IMPORTANT: the answer may require combining information across multiple chunks.
     - Never claim information is missing if relevant evidence exists.
-
+    - Do Not hallucinate information. If no documents are provided, say so.
+    - If no documents are provided, do not hallucinate citations.
     If the answer is not found, say:
     "I could not find this information in the uploaded documents."
 
@@ -96,26 +99,13 @@ def generate_response_stream(db, conversation_id: int, message: str):
     ====================
     """
     
-    response = requests.post("http://localhost:11434/api/generate",
-                             json={
-                                 "model": "mistral",
-                                 "prompt": prompt},
-                             stream=True)
+    provider = get_llm_provider()
     full_response = ""
     
-    for line in response.iter_lines():
-        if not line:
-            continue
-        try:
-            data = json.loads(line)
-            token = data.get("response", "")
-            full_response += token
-            
-            yield token
-        except Exception as e:
-            print("Stream error: ", e)
-        
-            
+    for token in provider.stream_chat(prompt):
+        full_response += token
+        yield token
+           
     save_message(db, conversation_id, "bot", full_response)
             
         
