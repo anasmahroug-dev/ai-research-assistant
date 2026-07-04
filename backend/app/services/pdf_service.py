@@ -1,5 +1,7 @@
 from app.models.pdf_document import PDFDocument
+from app.models.pdf_chunk import PDFChunk
 from app.utils.text_chunker import chunk_pages
+
 from app.services.embedding_service import create_embedding, cosine_similarity
 
 def save_pdf_document(db, conversation_id: int, filename: str, content: list):
@@ -12,45 +14,44 @@ def save_pdf_document(db, conversation_id: int, filename: str, content: list):
 def get_conversation_pdfs(db, conversation_id: int):
     return (db.query(PDFDocument).filter(PDFDocument.conversation_id == conversation_id).all())
 
+def save_pdf_chunks(db, pdf, chunks):
+    for index, chunk in enumerate(chunks):
+        embedding = create_embedding(chunk["text"]).tolist()
+        db_chunk = PDFChunk(
+            pdf_id=pdf.id,
+            page=chunk["page"],
+            chunk_index=index,
+            text=chunk["text"],
+            embedding=embedding
+        )
+        
+        db.add(db_chunk)
+    db.commit()
 
-
-def retrieve_relevant_chunks(pdfs, query):
+def retrieve_relevant_chunks(db, conversation_id, query):
     
     query_embedding = create_embedding(query)
+    pdfs = get_conversation_pdfs(db, conversation_id)
+    
     scored_chunks = []
     
     for pdf in pdfs:
-        chunks = chunk_pages(pdf.content)
+        chunks = (db.query(PDFChunk).filter(PDFChunk.pdf_id == pdf.id).all())
         
         for chunk in chunks:
-            
-            
-            chunk_embedding = create_embedding(chunk["text"])
-            score = cosine_similarity(query_embedding, chunk_embedding)
+     
+            score = cosine_similarity(query_embedding, chunk.embedding)
             
             scored_chunks.append({
                 
                 "score": score, 
-                "text": chunk["text"],
-                "page": chunk["page"],
+                "text": chunk.text,
+                "page": chunk.page,
                 "filename": pdf.filename})
             
     
     top_chunks = sorted(scored_chunks, key=lambda x: x["score"], reverse=True)[:10]
     
-    print("\nTOP CHUNKS:\n")
-    
-    for chunk in top_chunks:
-
-        print(f"PAGE: {chunk['page']} | SCORE: {chunk['score']}")
-
-        print(chunk["text"][:300])
-
-        print("\n-----------------\n")
-
-
-
-            
     return top_chunks
 
 def build_rag_context(chunks):

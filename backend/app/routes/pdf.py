@@ -1,7 +1,8 @@
 from fastapi import APIRouter, UploadFile, File, Depends
 from sqlalchemy.orm import Session
 from app.database.deps import get_db
-from app.services.pdf_service import save_pdf_document
+from app.services.pdf_service import save_pdf_document, save_pdf_chunks
+from app.utils.text_chunker import chunk_pages
 from app.services.conversation_service import get_conversation
 from app.models.pdf_document import PDFDocument
 from fastapi import Form
@@ -28,17 +29,20 @@ async def upload_pdf(conversation_id: int = Form(...),
         f.write(await file.read())
         
     pages = extract_pages_from_pdf(file_path)
+
     conversation = get_conversation(db, conversation_id)
     if not conversation:
         return {
             "error": "Conversation not found"
         }
-    save_pdf_document(
+    pdf = save_pdf_document(
     db,
     conversation_id,
     file.filename,
     pages
     )
+    chunks = chunk_pages(pages)
+    save_pdf_chunks(db, pdf, chunks)
     
     return{
         "filename": file.filename,

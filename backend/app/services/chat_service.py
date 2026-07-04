@@ -3,8 +3,7 @@ from app.models.conversation import Conversation
 from datetime import datetime, timezone
 from app.services.llm.factory import get_llm_provider
 from app.services.pdf_service import get_conversation_pdfs, build_rag_context, retrieve_relevant_chunks
-import requests
-import json
+from app.services.token_service import count_tokens
 
 
 def save_message(db, conversation_id, role: str, content: str):
@@ -43,8 +42,7 @@ def build_prompt(history, current_message):
 
 def generate_response_stream(db, conversation_id: int, message: str):
     history = get_conversation_history(db, conversation_id)
-    pdfs = get_conversation_pdfs(db, conversation_id)
-    relevant_chunks = retrieve_relevant_chunks(pdfs, message)
+    relevant_chunks = retrieve_relevant_chunks(db, conversation_id, message)
     pdf_context = build_rag_context(relevant_chunks)
     conversation_prompt = build_prompt(history, message)
     
@@ -105,6 +103,15 @@ def generate_response_stream(db, conversation_id: int, message: str):
     for token in provider.stream_chat(prompt):
         full_response += token
         yield token
+        
+    input_tokens = count_tokens(prompt)
+    output_tokens = count_tokens(full_response)
+    print("\n==== Token Debug ====")
+    print("Input Tokens: ",input_tokens)
+    print("Output Tokens: ",output_tokens)
+    print("Total Tokens: ",input_tokens + output_tokens)
+    
+    
            
     save_message(db, conversation_id, "bot", full_response)
             
