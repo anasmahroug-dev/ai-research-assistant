@@ -2,7 +2,7 @@ from app.models.pdf_document import PDFDocument
 from app.models.pdf_chunk import PDFChunk
 from app.utils.text_chunker import chunk_pages
 
-from app.services.embedding_service import create_embedding, cosine_similarity
+from app.services.embedding_service import create_embedding, cosine_similarity, rerank_chunks
 
 def save_pdf_document(db, conversation_id: int, filename: str, content: list):
     pdf = PDFDocument(conversation_id=conversation_id, filename=filename, content=content)
@@ -50,7 +50,10 @@ def retrieve_relevant_chunks(db, conversation_id, query):
                 "filename": pdf.filename})
             
     
-    top_chunks = sorted(scored_chunks, key=lambda x: x["score"], reverse=True)[:10]
+    semantic_chunks = sorted(scored_chunks, key=lambda x: x["score"], reverse=True)[:20]
+    reranked_chunks = rerank_chunks(query, semantic_chunks)
+    
+    top_chunks = reranked_chunks[:5]
     
     return top_chunks
 
