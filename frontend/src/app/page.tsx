@@ -16,7 +16,7 @@ import {getConversations,
   deleteConversation,
   renameConversation,
   sendMessageStream,
-
+  getChunk,
 } from "@/lib/api";
 
 import dynamic from "next/dynamic";
@@ -41,6 +41,8 @@ export default function Home(){
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPdf, setSelectedPdf] = useState<string | null>(null);
   const [selectedPages, setSelectedPages] = useState<number[]>([]);
+  const [selectedChunkId, setSelectedChunkId] = useState<number | null>(null);
+  const [highlightWords, setHighlightWords] = useState<string[]>([]);
   
   useEffect(()=>{
 
@@ -192,9 +194,18 @@ export default function Home(){
       onSend={handleSendMessage}
       onUploadPdf={handleUploadPdf}
       isLoading={isLoading}
-      onCitationClick={(filename, pages) => {
+      onCitationClick={async (filename, pages, chunkId) => {
+        const chunk = await getChunk(chunkId)
+        const keywords = chunk.text
+        .replace(/[^\w\s]/g, " ")
+        .split(/\s+/)
+        .filter(word => word.length > 4)
+        .filter((word, index, array)=> array.indexOf(word) === index)
+        .slice(0, 20);
         setSelectedPdf(`http://localhost:8000/uploads/${encodeURIComponent(filename)}`);
         setSelectedPages(pages);
+        setSelectedChunkId(chunkId);
+        setHighlightWords(keywords)
       }}
       />
       
@@ -202,6 +213,7 @@ export default function Home(){
         <PDFViewer 
          fileUrl={selectedPdf}
           pages={selectedPages}
+          highlightWords={highlightWords}
           onClose={()=> setSelectedPdf(null)}
         />
           )}

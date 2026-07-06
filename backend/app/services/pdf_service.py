@@ -47,7 +47,9 @@ def retrieve_relevant_chunks(db, conversation_id, query):
                 "score": score, 
                 "text": chunk.text,
                 "page": chunk.page,
-                "filename": pdf.filename})
+                "filename": pdf.filename,
+                "chunk_id": chunk.id,
+                })
             
     
     semantic_chunks = sorted(scored_chunks, key=lambda x: x["score"], reverse=True)[:20]
@@ -68,6 +70,7 @@ def build_rag_context(chunks):
         [DOCUMENT]
         File: {chunk["filename"]}
         Page: {chunk["page"]}
+        Chunk ID: {chunk["chunk_id"]}
 
         {chunk["text"]}
 

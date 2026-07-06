@@ -3,7 +3,8 @@ type Props = {
 
   onCitationClick: (
     filename: string,
-    pages: number[]
+    pages: number[],
+    chunkId: number
   ) => void;
 };
 
@@ -21,7 +22,7 @@ export default function MessageContent({
       {parts.map((part, index) => {
 
         const match = part.match(
-          /\[Source: (.*?), Pages?: ([\d,\s]+)\]/
+          /\[Source: (.*?), Pages?: ([\d,\s]+), Chunk: (\d+)\]/
         );
 
         if (!match) {
@@ -36,6 +37,8 @@ export default function MessageContent({
 
         const pageString = match[2];
 
+        const chunkId = Number(match[3]);
+
         const pages = pageString
           .split(",")
           .map((p) => Number(p.trim()));
@@ -44,7 +47,7 @@ export default function MessageContent({
           <button
             key={index}
             onClick={() =>
-              onCitationClick(filename, pages)
+              onCitationClick(filename, pages, chunkId)
             }
             className="text-blue-400 underline"
           >

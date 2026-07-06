@@ -73,9 +73,16 @@ def generate_response_stream(db, conversation_id: int, message: str):
     "I could not find this information in the uploaded documents."
 
     When using information from documents:
-    - Cite the source filename and page number.
+    - Cite the source filename and page number and chunk id.
+    - Every citation must refer to exactly ONE chunk.
+    - Never combine multiple chunks into a single citation.
+    - If multiple chunks support the answer, output multiple citations.
+    
     - Format citations exactly like:
-    [Source: filename.pdf, Page: X]
+    [Source: filename.pdf, Page: X, Chunk: Y]
+    - Every citation MUST begin with "[Source:"
+    - Never use any other citation format.
+    - Never cite inline.
     - Never invent citations.
     - If information is missing, say so.
     - If no sources are provided, say so.

@@ -115,3 +115,14 @@ export async function renameConversation(conversationId: number, title: string){
 
 
 }
+
+export async function getChunk(chunkId: number){
+    const response = await fetch(
+        `${API_URL}/chunks/${chunkId}`
+    )
+
+    return response.json();
+
+
+
+}

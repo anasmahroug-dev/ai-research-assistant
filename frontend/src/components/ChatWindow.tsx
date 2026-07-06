@@ -7,7 +7,7 @@ type Props ={
     onSend:(message: string) => void;
     onUploadPdf:(file: File) => void;
     isLoading: boolean;
-    onCitationClick?: (filename: string, pages: number[]) => void;
+    onCitationClick?: (filename: string, pages: number[], chunkId: number) => void | Promise<void>;
     };
 
 export default function ChatWindow({messages, onSend, onUploadPdf, isLoading, onCitationClick}: Props) {

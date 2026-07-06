@@ -5,6 +5,7 @@ import "react-pdf/dist/Page/TextLayer.css";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 
 import {X} from "lucide-react";
+import {useRef} from "react";
 
 pdfjs.GlobalWorkerOptions.workerSrc =
   new URL(
@@ -15,11 +16,19 @@ pdfjs.GlobalWorkerOptions.workerSrc =
 type Props = {
     fileUrl: string;
     pages: number[];
+    highlightWords: string[];
     onClose: () => void;
 };
 
-export default function PDFViewer({fileUrl, pages, onClose}: Props) {
+function escapeRegExp(text: string){
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+export default function PDFViewer({fileUrl, pages, highlightWords, onClose}: Props) {
+  const pageRefs = useRef(new Map<number, HTMLDivElement>());
     return (
+
+      
 
   <div
     className="
@@ -67,6 +76,11 @@ export default function PDFViewer({fileUrl, pages, onClose}: Props) {
 
             <div
               key={page}
+              ref={(e1)=> {
+                if (e1) {
+                  pageRefs.current.set(page, e1);
+                }
+              }}
               className="
               shadow-2xl
               rounded-lg
@@ -77,6 +91,27 @@ export default function PDFViewer({fileUrl, pages, onClose}: Props) {
               <Page
                 pageNumber={page}
                 width={600}
+                customTextRenderer={({str})=>{
+                  let result = str;
+                  
+                  highlightWords.forEach(word => {
+
+                    const regex = new RegExp(`(${escapeRegExp(word)})`, "gi");
+
+                    result = result.replace(
+                      regex,
+                      `<mark style="background:yellow">$1</mark>`
+                    );
+
+
+
+                  });
+
+                  
+                  return result;
+
+
+                }}
               />
 
             </div>

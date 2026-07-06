@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 load_dotenv()
 from fastapi import FastAPI
-from app.routes import health, chat, pdf, conversation
+from app.routes import health, chat, pdf, conversation, chunks
 from fastapi.staticfiles import StaticFiles
 from app.database.database import engine, Base
 from app.models import (
@@ -51,3 +51,7 @@ app.include_router(conversation.router,
                    prefix ="/conversations",
                    tags=["Conversations"]
                    )
+
+app.include_router(chunks.router,
+                   prefix = "/chunks",
+                   tags=["Chunks"])
