@@ -5,14 +5,24 @@ def chunk_pages(pages, chunk_size=750, overlap=150):
         text = page_data["text"]
         start = 0
         while start < len(text):
-            end = start + chunk_size
-            chunk_text = text[start:end]
+            end = min(start + chunk_size, len(text))
+            
+            if end < len(text):
+                while end <len(text) and not text[end].isspace():
+                    end+= 1
+            
             chunks.append({
-                "text": chunk_text,
+                "text": text[start:end],
                 "page": page_number
             })
             
-            start += chunk_size - overlap
+            if end >= len(text):
+                break
+            
+            start = max(end - overlap, 0)
+            
+            while start > 0 and not text[start -1].isspace():
+                start -= 1
         
     
     return chunks

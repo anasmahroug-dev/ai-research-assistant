@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, Text, JSON
+from sqlalchemy import Column, Integer, String, Text, JSON, ForeignKey
 from app.database.database import Base
+from sqlalchemy.orm import relationship
 
 
 class PDFDocument(Base):
@@ -7,7 +8,23 @@ class PDFDocument(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     
-    conversation_id = Column(Integer, index=True)
+    conversation_id = Column(Integer,
+                             ForeignKey("conversations.id", 
+                                        ondelete="CASCADE"), 
+                             nullable=False, 
+                             index=True, )
+    
+    conversation = relationship(
+        "Conversation",
+        back_populates="pdfs"
+    )
+    
+    chunks = relationship(
+        "PDFChunk",
+        back_populates="pdf",
+        cascade="all, delete-orphan"
+    )
+    
     
     filename = Column(String)
     

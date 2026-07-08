@@ -16,9 +16,14 @@ def get_conversation_pdfs(db, conversation_id: int):
 
 def save_pdf_chunks(db, pdf, chunks):
     for index, chunk in enumerate(chunks):
+        if index == 0:
+            print("========== BEFORE DB ==========")
+            print(chunk["text"])
+        
         embedding = create_embedding(chunk["text"]).tolist()
         db_chunk = PDFChunk(
             pdf_id=pdf.id,
+            conversation_id=pdf.conversation_id,
             page=chunk["page"],
             chunk_index=index,
             text=chunk["text"],

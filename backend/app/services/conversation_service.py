@@ -1,6 +1,7 @@
 from app.models.conversation import Conversation
 from app.models.message import Message
 from app.models.pdf_document import PDFDocument
+from app.models.pdf_chunk import PDFChunk
 from datetime import datetime, timezone
 
 
@@ -29,16 +30,28 @@ def get_conversation(db,conversation_id: int
     
 def delete_conversation_service(db, conversation_id: int):
     
-    conversation = (
+    db.query(PDFChunk).filter(
+        PDFChunk.conversation_id == conversation_id
+    ).delete(synchronize_session=False)
+
+    db.query(PDFDocument).filter(
+        PDFDocument.conversation_id == conversation_id
+    ).delete(synchronize_session=False)
+
+    db.query(Message).filter(
+        Message.conversation_id == conversation_id
+    ).delete(synchronize_session=False)
+
+    deleted = (
         db.query(Conversation)
         .filter(Conversation.id == conversation_id)
-        .first()
-        )
-    if not conversation:
+        .delete(synchronize_session=False)
+    )
+
+    if deleted == 0:
+        db.rollback()
         return None
-    db.query(Message).filter(Message.conversation_id == conversation_id).delete()
-    db.query(PDFDocument).filter(PDFDocument.conversation_id == conversation_id).delete()
-    db.delete(conversation)
+
     db.commit()
     return True
 

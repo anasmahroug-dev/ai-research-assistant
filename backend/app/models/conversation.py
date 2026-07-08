@@ -1,4 +1,7 @@
 from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy.orm import relationship
+from app.models.message import Message
+from app.models.pdf_document import PDFDocument
 from datetime import datetime, timezone  
 
 
@@ -19,6 +22,20 @@ class Conversation(Base):
     title = Column(String)
     
     updated_at = Column(DateTime, default =lambda:datetime.now(timezone.utc))
+    
+    messages = relationship(
+        "Message",
+        back_populates="conversation",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+
+    pdfs = relationship(
+        "PDFDocument",
+        back_populates="conversation",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
     
     
     

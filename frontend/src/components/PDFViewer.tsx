@@ -3,6 +3,7 @@
 import { Document, Page, pdfjs } from "react-pdf";
 import "react-pdf/dist/Page/TextLayer.css";
 import "react-pdf/dist/Page/AnnotationLayer.css";
+import { PDFPageProxy } from "pdfjs-dist";
 
 import {X} from "lucide-react";
 import {useRef} from "react";
@@ -16,7 +17,7 @@ pdfjs.GlobalWorkerOptions.workerSrc =
 type Props = {
     fileUrl: string;
     pages: number[];
-    highlightWords: string[];
+    highlightChunk: string;
     onClose: () => void;
 };
 
@@ -24,11 +25,87 @@ function escapeRegExp(text: string){
   return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-export default function PDFViewer({fileUrl, pages, highlightWords, onClose}: Props) {
-  const pageRefs = useRef(new Map<number, HTMLDivElement>());
-    return (
+function normalize(text: string){
+  return text
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 
-      
+}
+
+
+
+export default function PDFViewer({fileUrl, pages, highlightChunk, onClose}: Props) {
+  const pageRefs = useRef(new Map<number, HTMLDivElement>());
+  function handlePageLoaded(textLayer: HTMLDivElement){
+
+    const pageText = textLayer.innerText;
+    
+    const chunkWords = normalize(highlightChunk).split(" ").filter(Boolean);
+
+    const spans = Array.from(textLayer.querySelectorAll("span"));
+
+    const spanWords: string[] = [];
+    const wordToSpan: number[] = [];
+
+    spans.forEach((span, spanIndex) =>{
+      const words = normalize(span.textContent ?? "")
+      .split(" ")
+      .filter(Boolean);
+
+      for (const word of words){
+        spanWords.push(word);
+        wordToSpan.push(spanIndex);
+      }
+    });
+
+    const pageWords = spanWords;
+
+    let bestIndex = 0;
+    let bestScore = -1;
+
+    for(
+      let start = 0;
+      start <= pageWords.length - chunkWords.length;
+      start++
+    ) {
+      let score = 0;
+
+      for(let i = 0; i< chunkWords.length; i++){
+        if (pageWords[start + i]=== chunkWords[i]){
+          score++;
+        }
+      }
+      if (score > bestScore){
+        bestScore = score;
+        bestIndex = start;
+      }
+
+    }
+
+    const startSpan = wordToSpan[bestIndex];
+    const endSpan = wordToSpan[
+      bestIndex + chunkWords.length - 1
+    ];
+
+
+    spans.forEach((span) => {
+    span.style.background = "";
+    span.style.color = "";
+    });
+    for(let i = startSpan; i<= endSpan; i++){
+      spans[i].style.background = "yellow";
+      spans[i].style.color = "black";
+    }
+
+
+
+
+
+  }  
+  
+  return (
 
   <div
     className="
@@ -91,27 +168,18 @@ export default function PDFViewer({fileUrl, pages, highlightWords, onClose}: Pro
               <Page
                 pageNumber={page}
                 width={600}
-                customTextRenderer={({str})=>{
-                  let result = str;
-                  
-                  highlightWords.forEach(word => {
+                onRenderTextLayerSuccess={() => {
+                  const container = pageRefs.current.get(page);
 
-                    const regex = new RegExp(`(${escapeRegExp(word)})`, "gi");
+                  if (!container) return;
 
-                    result = result.replace(
-                      regex,
-                      `<mark style="background:yellow">$1</mark>`
-                    );
+                  const textLayer =
+                      container.querySelector(".react-pdf__Page__textContent");
 
+                  if (!(textLayer instanceof HTMLDivElement)) return;
 
-
-                  });
-
-                  
-                  return result;
-
-
-                }}
+                  handlePageLoaded(textLayer);
+                  }}
               />
 
             </div>
