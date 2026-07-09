@@ -1,5 +1,6 @@
  import { useState } from "react";
  import {Pencil, Trash2, UserIcon, Plus} from "lucide-react";
+ import ConfirmDialog from "./ConfirmDialog"
  
  type Props = {
     conversations: any[];
@@ -11,15 +12,16 @@
     
   }
 
-
-
-
 export default function Sidebar({conversations, onSelectConversation,onNewConversation,onDeleteConversation, onRenameConversation, userId}: Props) {
   const [editingId, setEditingId] =
-useState<number | null>(null);
+  useState<number | null>(null);
 
-const [editTitle, setEditTitle] = 
-useState("");
+  const [editTitle, setEditTitle] = 
+  useState("");
+
+  const [conversationToDelete, setConversationToDelete] =
+  useState<number | null>(null);
+
   return (
     <aside className="w-72 h-screen bg-zinc-900 text-white p-4 flex flex-col">
 
@@ -90,14 +92,8 @@ useState("");
                   <button 
                   onClick={(e) => {
                     e.stopPropagation();
-
-                    const confirmed =
-                    confirm("Delete conversation?");
-
-                    if (confirmed){
-                      onDeleteConversation(conv.id);
-
-                    }
+                    setConversationToDelete(conv.id);
+                    
                   }}
                   className="cursor-pointer
                   hover:bg-zinc-800
@@ -117,7 +113,20 @@ useState("");
         className="flex items-center gap-5 mt-4 bg-zinc-800 hover:bg-zinc-700 p-3 rounded-xl cursor-pointer text-left">
        <UserIcon size={32}/>{userId}
       </button>
-
+        <ConfirmDialog
+        open={conversationToDelete !== null}
+        title="Delete conversation?"
+        message="This will permanently delete this conversation and all of its messages."
+        confirmText="Delete"
+        cancelText="Cancel"
+        onCancel={() => setConversationToDelete(null)}
+        onConfirm={() => {
+          if (conversationToDelete !== null) {
+            onDeleteConversation(conversationToDelete);
+            setConversationToDelete(null);
+          }
+        }}
+      />
     </aside>
   );
 }

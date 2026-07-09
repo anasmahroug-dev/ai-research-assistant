@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import Sidebar from "@/components/Sidebar";
 import ChatWindow from "@/components/ChatWindow";
-import PdfSiderbar from "@/components/PdfSidebar";
+import PdfSidebar from "@/components/PdfSidebar";
 import MessageContent from "@/components/MessageContent";
 
 
@@ -17,6 +17,7 @@ import {getConversations,
   renameConversation,
   sendMessageStream,
   getChunk,
+  deletePdf,
 } from "@/lib/api";
 
 import dynamic from "next/dynamic";
@@ -175,6 +176,13 @@ export default function Home(){
 
   }
 
+  async function handleDeletePdf(pdfId:number){
+    await deletePdf(pdfId);
+    setPdfs(prev => 
+      prev.filter(pdf => pdf.id !== pdfId)
+    )
+  }
+
   async function handleRenameConversation(conversationId: number, title: string){
 
     const updated = await renameConversation(conversationId, title);
@@ -223,9 +231,10 @@ export default function Home(){
         />
           )}
 
-      <PdfSiderbar
+      <PdfSidebar
       pdfs={pdfs} 
-      isUploading={isUploadingPdf}/>
+      isUploading={isUploadingPdf}
+      onDeletePdf={handleDeletePdf}/>
 
     </main>
   );

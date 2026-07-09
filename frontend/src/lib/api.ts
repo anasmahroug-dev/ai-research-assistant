@@ -123,6 +123,16 @@ export async function getChunk(chunkId: number){
 
     return response.json();
 
+}
 
+export async function deletePdf(pdfId: number){
+    const response = await fetch(
+        `${API_URL}/pdf/${pdfId}`,
+        {
+        method:"DELETE"
+        }
+    );
+
+    return response.json();
 
 }
