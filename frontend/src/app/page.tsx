@@ -43,6 +43,9 @@ export default function Home(){
   const [selectedPages, setSelectedPages] = useState<number[]>([]);
   const [selectedChunkId, setSelectedChunkId] = useState<number | null>(null);
   const [highlightChunk, setHighlightChunk] = useState("");
+  const [isUploadingPdf, setIsUploadingPdf] = useState(false);
+
+
   
   useEffect(()=>{
 
@@ -130,20 +133,26 @@ export default function Home(){
 
   async function handleUploadPdf(file: File){
     let conversation = selectedConversation;
-
+    
     if (!conversation){
       conversation = await createConversation(userId);
       setConversations((prev)=> [conversation, ...prev]);
       setSelectedConversation(conversation);
     }
 
-    await uploadPDF(conversation.id, file);
+    setIsUploadingPdf(true);
 
-    const updatedPdfs = await getPdfs(conversation.id);
+    try{
 
-    setPdfs(updatedPdfs);
+      await uploadPDF(conversation.id, file);
 
+      const updatedPdfs = await getPdfs(conversation.id);
 
+      setPdfs(updatedPdfs);
+    } finally{
+      setIsUploadingPdf(false);
+    }
+    
   }
 
   async function handleDeleteConversation(conversationId: number){
@@ -215,7 +224,8 @@ export default function Home(){
           )}
 
       <PdfSiderbar
-      pdfs={pdfs} />
+      pdfs={pdfs} 
+      isUploading={isUploadingPdf}/>
 
     </main>
   );
