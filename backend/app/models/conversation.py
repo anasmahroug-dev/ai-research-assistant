@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from app.models.message import Message
 from app.models.pdf_document import PDFDocument
@@ -17,7 +17,7 @@ class Conversation(Base):
     
     id = Column(Integer, primary_key=True, index=True)
    
-    user_id = Column(String)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
    
     title = Column(String)
     

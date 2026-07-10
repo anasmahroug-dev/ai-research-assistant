@@ -99,10 +99,6 @@ export default function PDFViewer({fileUrl, pages, highlightChunk, onClose}: Pro
       spans[i].style.color = "black";
     }
 
-
-
-
-
   }  
   
   return (
