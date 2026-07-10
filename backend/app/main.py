@@ -12,10 +12,6 @@ from app.models import (
 from fastapi.middleware.cors import CORSMiddleware
 
 
-
-
-
-
 app = FastAPI()
 
 app.mount("/uploads",
