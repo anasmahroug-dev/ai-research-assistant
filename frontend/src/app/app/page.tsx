@@ -20,6 +20,9 @@ import {getConversations,
   deletePdf,
 } from "@/lib/api";
 
+import {getCurrentUser, logout} from "@/lib/auth";
+import {useRouter} from "next/navigation";
+
 import dynamic from "next/dynamic";
 
 const PDFViewer = dynamic(
@@ -30,11 +33,8 @@ const PDFViewer = dynamic(
 );
 
 
-
 export default function Home(){
   
-  const userId = "consolas";
-
   const [conversations, setConversations] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
   const [pdfs, setPdfs] = useState<any[]>([]);
@@ -45,20 +45,46 @@ export default function Home(){
   const [selectedChunkId, setSelectedChunkId] = useState<number | null>(null);
   const [highlightChunk, setHighlightChunk] = useState("");
   const [isUploadingPdf, setIsUploadingPdf] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const router = useRouter();
+  
+  useEffect(()=> {
+    async function loadUser(){
+      const currentUser = await getCurrentUser();
 
+      if (!currentUser){
+        window.location.href = "/login";
+        return;
+      }
 
+      setUser(currentUser);
+
+    }
+
+    loadUser();
+  }, []);
+  
+  
+  
   
   useEffect(()=>{
 
+    if (!user) return;
+
     async function loadConversations(){
       const data =
-      await getConversations(userId);
+      await getConversations();
       setConversations(data);
     }
     loadConversations();
 
 
-  }, []);
+  }, [user]);
+
+  function handleLogout(){
+  logout();
+  router.push("/");
+}
 
   async function handleSelectConversation(
     conversation: any
@@ -79,7 +105,7 @@ export default function Home(){
   async function handleSendMessage(text: string){
     let conversation = selectedConversation;
     if (!conversation){
-      conversation = await createConversation(userId);
+      conversation = await createConversation();
     
 
     setConversations((prev)=> [conversation, ...prev]);
@@ -121,7 +147,7 @@ export default function Home(){
 }
 
   async function handleNewConversation(){
-    const newConversation = await createConversation(userId);
+    const newConversation = await createConversation();
     setConversations((prev)=> [
       newConversation,
        ...prev,]);
@@ -136,7 +162,7 @@ export default function Home(){
     let conversation = selectedConversation;
     
     if (!conversation){
-      conversation = await createConversation(userId);
+      conversation = await createConversation();
       setConversations((prev)=> [conversation, ...prev]);
       setSelectedConversation(conversation);
     }
@@ -204,7 +230,8 @@ export default function Home(){
       onNewConversation={handleNewConversation}
       onDeleteConversation={handleDeleteConversation}
       onRenameConversation={handleRenameConversation}
-      userId= {userId}
+      username= {user?.username ?? ""}
+      onLogout={handleLogout}
       />
       <ChatWindow 
       messages={messages}

@@ -2,20 +2,35 @@ import { APP_DIR_ALIAS } from "next/dist/lib/constants";
 
 const API_URL = "http://localhost:8000";
 
-export async function getConversations(userId: string)
+function authHeaders(contentType = false) {
+    const token = localStorage.getItem("token");
+
+    return {
+        ...(contentType && { "Content-Type": "application/json" }),
+        Authorization: `Bearer ${token}`,
+    };
+}
+
+export async function getConversations()
 {
+
     const response = await fetch(
-        `${API_URL}/conversations/${userId}`
+        `${API_URL}/conversations/`,{
+        headers: authHeaders(),
+        }
 
     );
     return response.json();
 }
 
-export async function createConversation(userId: string){
+export async function createConversation(){
+ 
+    
     const response = await fetch(
-        `${API_URL}/conversations/?user_id=${userId}`,
+        `${API_URL}/conversations/`,
         {
             method: "POST",
+            headers: authHeaders(),
         }
     );
     return response.json();
@@ -23,7 +38,8 @@ export async function createConversation(userId: string){
 
 export async function getMessages(conversationId: number){
     const response = await fetch(
-        `${API_URL}/chat/history/${conversationId}`
+        `${API_URL}/chat/history/${conversationId}`,
+        {headers: authHeaders()}
     );
     return response.json();
 }
@@ -37,9 +53,7 @@ export async function sendMessageStream(conversationId: number, message: string,
             `${API_URL}/chat/`,
             {
                 method: "POST",
-                headers:{
-                    "Content-Type": "application/json",
-                },
+                headers:authHeaders(true),
 
                 body: JSON.stringify({conversation_id: conversationId,
                     message,}),
@@ -47,7 +61,10 @@ export async function sendMessageStream(conversationId: number, message: string,
 
             }
         );
+        const text = await response.clone().text();
 
+        console.log(response.status);
+        console.log(text);
         const reader = response.body?.getReader();
 
         if (!reader) return;
@@ -62,8 +79,6 @@ export async function sendMessageStream(conversationId: number, message: string,
 }
 
 
-
-
 export async function uploadPDF(conversationId: number, file: File){
 
     const formData = new FormData();
@@ -76,6 +91,7 @@ export async function uploadPDF(conversationId: number, file: File){
         `${API_URL}/pdf/upload`,
         {
             method: "POST",
+            headers: authHeaders(),
             body: formData,
         }
     );
@@ -85,7 +101,9 @@ export async function uploadPDF(conversationId: number, file: File){
 export async function getPdfs(conversationId: number) {
 
   const response = await fetch(
-    `${API_URL}/pdf/${conversationId}`
+    `${API_URL}/pdf/${conversationId}`, {
+        headers: authHeaders(),
+    }
   );
 
   return response.json();
@@ -97,6 +115,7 @@ export async function deleteConversation(conversationId: number){
         `${API_URL}/conversations/${conversationId}`,
         {
             method: "DELETE",
+            headers: authHeaders(),
         }
     );
     return response.json();
@@ -108,6 +127,7 @@ export async function renameConversation(conversationId: number, title: string){
         `${API_URL}/conversations/${conversationId}?title=${encodeURIComponent(title)}`,
         {
             method: "PUT",
+            headers: authHeaders(),
         }
     );
 
@@ -118,7 +138,9 @@ export async function renameConversation(conversationId: number, title: string){
 
 export async function getChunk(chunkId: number){
     const response = await fetch(
-        `${API_URL}/chunks/${chunkId}`
+        `${API_URL}/chunks/${chunkId}`,{
+            headers: authHeaders(),
+        }
     )
 
     return response.json();
@@ -129,7 +151,8 @@ export async function deletePdf(pdfId: number){
     const response = await fetch(
         `${API_URL}/pdf/${pdfId}`,
         {
-        method:"DELETE"
+        method:"DELETE",
+        headers: authHeaders(),
         }
     );
 

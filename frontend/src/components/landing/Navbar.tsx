@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Navbar() {
   return (
     <header className="border-b border-zinc-800">
@@ -9,13 +11,15 @@ export default function Navbar() {
 
         <div className="flex items-center gap-3">
 
-          <button className="rounded-lg px-4 py-2 hover:bg-zinc-800 transition">
+          <Link href="/login" 
+          className="rounded-lg px-4 py-2 hover:bg-zinc-800 transition">
             Login
-          </button>
+          </Link>
 
-          <button className="rounded-lg bg-white px-4 py-2 font-medium text-black hover:bg-zinc-200 transition">
+          <Link href="/register"
+           className="rounded-lg bg-white px-4 py-2 font-medium text-black hover:bg-zinc-200 transition">
             Sign Up
-          </button>
+          </Link>
 
         </div>
 

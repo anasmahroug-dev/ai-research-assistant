@@ -27,9 +27,10 @@ def get_user_conversations(current_user: User = Depends(get_current_user), db: S
 @router.delete("/{conversation_id}")
 def delete_conversation(
     conversation_id: int,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    success = delete_conversation_service(db, conversation_id)
+    success = delete_conversation_service(db, conversation_id, current_user)
     if not success:
         return {"error": "Conversation not found"}
     
@@ -41,8 +42,9 @@ def delete_conversation(
 @router.put("/{conversation_id}")
 def rename_conversation(conversation_id: int,
                         title: str,
+                        current_user: User = Depends(get_current_user),
                         db: Session = Depends(get_db)):
-    conversation = rename_conversation_service(db, conversation_id, title)
+    conversation = rename_conversation_service(db, conversation_id, current_user,title)
     if not conversation:
         return{"error": "Conversation not found"}
     return conversation

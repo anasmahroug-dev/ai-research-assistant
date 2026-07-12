@@ -1,5 +1,5 @@
  import { useState } from "react";
- import {Pencil, Trash2, UserIcon, Plus} from "lucide-react";
+ import {Pencil, Trash2, UserIcon, Plus, ChevronUp, User, Settings, LogOut} from "lucide-react";
  import ConfirmDialog from "./ConfirmDialog"
  
  type Props = {
@@ -8,11 +8,12 @@
     onNewConversation:() => void;
     onDeleteConversation: (id: number) => void;
     onRenameConversation: (id:number, title: string) => void;
-    userId: string;
+    username: string;
+    onLogout:() => void;
     
   }
 
-export default function Sidebar({conversations, onSelectConversation,onNewConversation,onDeleteConversation, onRenameConversation, userId}: Props) {
+export default function Sidebar({conversations, onSelectConversation,onNewConversation,onDeleteConversation, onRenameConversation, username, onLogout}: Props) {
   const [editingId, setEditingId] =
   useState<number | null>(null);
 
@@ -21,6 +22,8 @@ export default function Sidebar({conversations, onSelectConversation,onNewConver
 
   const [conversationToDelete, setConversationToDelete] =
   useState<number | null>(null);
+
+  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <aside className="w-72 h-screen bg-zinc-900 text-white p-4 flex flex-col">
@@ -109,10 +112,57 @@ export default function Sidebar({conversations, onSelectConversation,onNewConver
         ))}
       </div>
 
+      <div className="relative mt-4">
+
+  <button
+    onClick={() => setMenuOpen(!menuOpen)}
+    className="flex w-full items-center justify-between rounded-xl bg-zinc-800 hover:bg-zinc-700 p-3 transition cursor-pointer"
+  >
+    <div className="flex items-center gap-3">
+      <UserIcon size={22} />
+      <span>{username}</span>
+    </div>
+
+    <ChevronUp
+    size={18}
+    className={`transition-transform duration-200 ${
+    menuOpen ? "rotate-180" : ""
+    }`}
+    />
+  </button>
+
+  {menuOpen && (
+    <div className="absolute bottom-full mb-2 w-full rounded-xl bg-zinc-800 border border-zinc-700 shadow-lg overflow-hidden">
+      {/*
       <button
-        className="flex items-center gap-5 mt-4 bg-zinc-800 hover:bg-zinc-700 p-3 rounded-xl cursor-pointer text-left">
-       <UserIcon size={32}/>{userId}
+        className="flex w-full items-center gap-3 px-4 py-3 hover:bg-zinc-700 transition cursor-pointer"
+      >
+        <Settings size={18} />
+        Settings
       </button>
+
+      <button
+        className="flex w-full items-center gap-3 px-4 py-3 hover:bg-zinc-700 transition cursor-pointer"
+      >
+        <UserIcon size={18} />
+        Profile
+      </button>
+
+      */}
+      <div className="border-t border-zinc-700" />
+
+      <button
+        onClick={onLogout}
+        className="flex w-full items-center gap-3 px-4 py-3 text-red-400 hover:bg-zinc-700 hover:text-red-300 transition cursor-pointer"
+      >
+        <LogOut size={18} />
+        Logout
+      </button>
+
+    </div>
+  )}
+
+</div>
         <ConfirmDialog
         open={conversationToDelete !== null}
         title="Delete conversation?"

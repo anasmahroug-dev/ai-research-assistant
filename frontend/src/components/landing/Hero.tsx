@@ -1,3 +1,5 @@
+import Link from "next/link"
+
 export default function Hero() {
   return (
     <section className="mx-auto flex max-w-6xl flex-col items-center px-8 py-28 text-center">
@@ -18,9 +20,10 @@ export default function Hero() {
           Continue as Guest
         </button>
 
-        <button className="rounded-xl border border-zinc-700 px-6 py-3 hover:bg-zinc-900 transition">
+        <Link href="/login"
+        className="rounded-xl border border-zinc-700 px-6 py-3 hover:bg-zinc-900 transition">
           Sign In
-        </button>
+        </Link>
 
       </div>
 

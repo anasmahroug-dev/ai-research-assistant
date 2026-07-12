@@ -28,7 +28,7 @@ def get_conversation(db,conversation_id: int
         .first()
     )
     
-def delete_conversation_service(db, conversation_id: int):
+def delete_conversation_service(db, conversation_id: int, current_user):
     
     db.query(PDFChunk).filter(
         PDFChunk.conversation_id == conversation_id
@@ -44,7 +44,8 @@ def delete_conversation_service(db, conversation_id: int):
 
     deleted = (
         db.query(Conversation)
-        .filter(Conversation.id == conversation_id)
+        .filter(Conversation.id == conversation_id, 
+                Conversation.user_id == current_user.id)
         .delete(synchronize_session=False)
     )
 
@@ -56,9 +57,10 @@ def delete_conversation_service(db, conversation_id: int):
     return True
 
 
-def rename_conversation_service(db, conversation_id: int, title:str):
+def rename_conversation_service(db, conversation_id: int, current_user, title:str):
     conversation = (db.query(Conversation)
-                    .filter(Conversation.id == conversation_id)
+                    .filter(Conversation.id == conversation_id,
+                            Conversation.user_id == current_user.id)
                     .first()
                     )
     if not conversation:
