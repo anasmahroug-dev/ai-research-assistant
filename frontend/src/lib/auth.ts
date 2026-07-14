@@ -78,3 +78,19 @@ export async function getCurrentUser(){
 export function logout(){
     localStorage.removeItem("token");
 }
+
+export async function guestLogin(){
+    const response = await fetch(`${API_URL}/auth/guest`,{
+        method: "POST",
+    });
+
+    const data = await response.json();
+
+    if (!response.ok){
+        throw new Error(data.detail || "Guest login failed");
+    }
+
+    localStorage.setItem("token", data.access_token);
+
+    return data;
+}

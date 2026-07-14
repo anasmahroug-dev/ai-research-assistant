@@ -50,6 +50,7 @@ export default function Home(){
   
   useEffect(()=> {
     async function loadUser(){
+      
       const currentUser = await getCurrentUser();
 
       if (!currentUser){
@@ -63,8 +64,6 @@ export default function Home(){
 
     loadUser();
   }, []);
-  
-  
   
   
   useEffect(()=>{

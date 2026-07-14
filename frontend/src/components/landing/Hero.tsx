@@ -1,7 +1,23 @@
+"use client";
+import {useRouter} from "next/navigation";
+import { guestLogin } from "@/lib/auth";
+
 import Link from "next/link"
 
+
 export default function Hero() {
+  const router = useRouter();
+
+async function handleGuestLogin(){
+  await guestLogin();
+
+  router.push("/app");
+
+  
+}
+  
   return (
+
     <section className="mx-auto flex max-w-6xl flex-col items-center px-8 py-28 text-center">
 
       <h1 className="max-w-4xl text-6xl font-bold leading-tight">
@@ -16,8 +32,9 @@ export default function Hero() {
 
       <div className="mt-12 flex gap-4">
 
-        <button className="rounded-xl bg-white px-6 py-3 font-semibold text-black hover:bg-zinc-200 transition">
-          Continue as Guest
+        <button onClick={handleGuestLogin}
+        className="rounded-xl bg-white px-6 py-3 font-semibold text-black hover:bg-zinc-200 transition cursor-pointer">
+          Try it Out
         </button>
 
         <Link href="/login"

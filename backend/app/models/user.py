@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, Boolean
 from datetime import datetime, timezone
 
 from app.database.database import Base
@@ -13,6 +13,8 @@ class User(Base):
     username = Column(String, nullable=False)
    
     password_hash = Column(String, nullable=False)
+    
+    is_guest = Column(Boolean, default=False, nullable=False)
     
     created_at = Column(DateTime, default=lambda:datetime.now(timezone.utc))
     

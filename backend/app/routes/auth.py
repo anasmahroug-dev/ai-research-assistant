@@ -4,7 +4,7 @@ from app.dependencies.auth import get_current_user
 from app.models.user import User
 from app.database.deps import get_db
 from app.schemas.user import RegisterRequest, LoginRequest, AuthResponse, UserResponse
-from app.services.auth_service import register_user, login_user
+from app.services.auth_service import register_user, login_user, create_guest_user
 
 router = APIRouter(
     prefix="/auth",
@@ -45,3 +45,8 @@ def me(
 ):
     return current_user
 
+@router.post("/guest", response_model=AuthResponse)
+def guest(
+    db: Session = Depends(get_db)
+    ):
+    return create_guest_user(db) 
