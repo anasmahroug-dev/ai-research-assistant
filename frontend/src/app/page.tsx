@@ -41,7 +41,6 @@ export default function LandingPage() {
       <Navbar />
       <Hero />
       <Features />
-      <Screenshot />
       <Footer />
     </main>
   );

@@ -18,6 +18,7 @@ import {getConversations,
   sendMessageStream,
   getChunk,
   deletePdf,
+
 } from "@/lib/api";
 
 import {getCurrentUser, logout} from "@/lib/auth";
@@ -222,7 +223,9 @@ export default function Home(){
   }
 
   return (
+    
     <main className="flex h-screen bg-zinc-800">
+        
       <Sidebar
       conversations={conversations} 
       onSelectConversation={handleSelectConversation}
@@ -232,6 +235,26 @@ export default function Home(){
       username= {user?.username ?? ""}
       onLogout={handleLogout}
       />
+       <div className="flex flex-col flex-1">
+         {user?.is_guest && (
+        <div className="mx-6 mt-4 mb-3 flex items-center justify-between rounded-xl border border-zinc-700 bg-zinc-900 px-5 py-4">
+          <div>
+            <p className="font-medium text-white">
+              You're using a guest account
+            </p>
+            <p className="text-sm text-zinc-400">
+              Create a free account to save your chats and uploaded PDFs permanently.
+            </p>
+          </div>
+
+          <button
+            onClick={() => router.push("/register")}
+            className="rounded-lg bg-white px-4 py-2 text-black font-medium hover:bg-zinc-200 transition"
+          >
+            Create Account
+          </button>
+        </div>
+      )}
       <ChatWindow 
       messages={messages}
       onSend={handleSendMessage}
@@ -247,6 +270,7 @@ export default function Home(){
 
       }}
       />
+      </div>
       
       {selectedPdf && (
         <PDFViewer 
