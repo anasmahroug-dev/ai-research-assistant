@@ -1,3 +1,5 @@
+import { FileText, ExternalLink, ChevronRight, Eye } from "lucide-react";
+
 type Props = {
   content: string;
 
@@ -12,15 +14,13 @@ export default function MessageContent({
   content,
   onCitationClick,
 }: Props) {
-
   const parts = content.split(
     /(\[Source:.*?\])/
   );
 
   return (
-    <div>
+    <div className="whitespace-pre-wrap">
       {parts.map((part, index) => {
-
         const match = part.match(
           /\[Source: (.*?), Pages?: ([\d,\s]+), Chunk: (\d+)\]/
         );
@@ -34,9 +34,7 @@ export default function MessageContent({
         }
 
         const filename = match[1];
-
         const pageString = match[2];
-
         const chunkId = Number(match[3]);
 
         const pages = pageString
@@ -49,9 +47,47 @@ export default function MessageContent({
             onClick={() =>
               onCitationClick(filename, pages, chunkId)
             }
-            className="text-blue-400 underline"
+            className="
+              inline-flex
+              items-center
+              gap-2
+              mx-1
+              my-1
+              px-3
+              py-2
+              rounded-full
+              border
+              border-zinc-700
+              bg-zinc-900
+              text-zinc-200
+              hover:bg-zinc-800
+              hover:border-zinc-500
+              hover:scale-105
+              active:scale-95
+              transition-all
+              duration-150
+              cursor-pointer
+            "
           >
-            {part}
+            <FileText
+              size={15}
+              className="text-zinc-400 shrink-0"
+            />
+
+            <span className="max-w-44 truncate text-sm font-medium">
+              {filename.replace(".pdf", "")}
+            </span>
+
+            <span className="text-xs text-zinc-500 whitespace-nowrap">
+              {pages.length === 1
+                ? `p.${pages[0]}`
+                : `pp.${pages.join(", ")}`}
+            </span>
+
+            <Eye
+              size={13}
+              className="text-zinc-500 shrink-0"
+            />
           </button>
         );
       })}

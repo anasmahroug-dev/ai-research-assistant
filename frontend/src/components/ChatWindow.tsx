@@ -8,15 +8,14 @@ type Props ={
     onUploadPdf:(file: File) => void;
     isLoading: boolean;
     onCitationClick?: (filename: string, pages: number[], chunkId: number) => void | Promise<void>;
+    className?: string;
     };
 
-export default function ChatWindow({messages, onSend, onUploadPdf, isLoading, onCitationClick}: Props) {
+export default function ChatWindow({messages, onSend, onUploadPdf, isLoading, onCitationClick, className=""}: Props) {
     
-    
-
     return (
-        <section className="flex-1 flex flex-col bg-zinc-950 text-white">
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+        <section className={`flex flex-col bg-zinc-950 text-white min-h-0 ${className}`}>
+            <div className="flex-1 min-h-0 overflow-y-auto p-6 space-y-4">
                 {messages.map((msg, index) => (
                     <div 
                 key={index}
@@ -37,8 +36,7 @@ export default function ChatWindow({messages, onSend, onUploadPdf, isLoading, on
             {isLoading && (
                 <div className="flex justify-start">
                     
-                    <div
-                    
+                    <div  
                     className="
                     flex 
                     items-center 
@@ -50,11 +48,7 @@ export default function ChatWindow({messages, onSend, onUploadPdf, isLoading, on
                         <LoaderCircle size={20}className="animate-spin text-zinc-400"/>
                         <span className="text-zinc-400 text-sm">Thinking...</span>
 
-
-
                     </div>
-                    
-                    
                     
                 </div>
             )}

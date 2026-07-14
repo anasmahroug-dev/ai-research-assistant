@@ -224,7 +224,7 @@ export default function Home(){
 
   return (
     
-    <main className="flex h-screen bg-zinc-800">
+    <main className="flex h-screen overflow-hidden bg-zinc-800">
         
       <Sidebar
       conversations={conversations} 
@@ -235,9 +235,9 @@ export default function Home(){
       username= {user?.username ?? ""}
       onLogout={handleLogout}
       />
-       <div className="flex flex-col flex-1">
+       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
          {user?.is_guest && (
-        <div className="mx-6 mt-4 mb-3 flex items-center justify-between rounded-xl border border-zinc-700 bg-zinc-900 px-5 py-4">
+        <div className="flex items-center justify-between rounded-xl border border-zinc-700 bg-zinc-900 px-6 py-3">
           <div>
             <p className="font-medium text-white">
               You're using a guest account
@@ -256,6 +256,7 @@ export default function Home(){
         </div>
       )}
       <ChatWindow 
+      className="flex-1"
       messages={messages}
       onSend={handleSendMessage}
       onUploadPdf={handleUploadPdf}
