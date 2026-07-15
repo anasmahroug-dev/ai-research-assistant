@@ -1,5 +1,5 @@
 "use client";
-
+import { API_URL } from "@/lib/api";
 import { useState } from "react";
 import {
   ArrowLeft,
@@ -115,7 +115,7 @@ export default function PdfSidebar({
                   "
                   onClick={() => {
                     window.open(
-                      `http://localhost:8000/uploads/${pdf.filename}`,
+                      `${API_URL}/uploads/${pdf.filename}`,
                       "_blank"
                     );
                   }}

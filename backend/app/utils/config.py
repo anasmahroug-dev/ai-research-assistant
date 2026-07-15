@@ -1,1 +1,1 @@
-UPLOAD_DIR = "uploads"
+UPLD_DIR = "uploads"

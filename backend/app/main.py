@@ -10,8 +10,9 @@ from app.models import (
     conversation as conversation_model
 )
 from fastapi.middleware.cors import CORSMiddleware
+import os
 
-
+FRONTEND_URL = os.getenv("FRONTEND_URL")
 app = FastAPI()
 
 app.mount("/uploads",
@@ -22,6 +23,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
+        FRONTEND_URL,
     ],
     allow_credentials=True,
     allow_methods=["*"],

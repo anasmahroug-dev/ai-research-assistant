@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
+import { API_URL } from "@/lib/api";
 import Sidebar from "@/components/Sidebar";
 import ChatWindow from "@/components/ChatWindow";
 import PdfSidebar from "@/components/PdfSidebar";
@@ -23,6 +23,7 @@ import {getConversations,
 
 import {getCurrentUser, logout} from "@/lib/auth";
 import {useRouter} from "next/navigation";
+
 
 import dynamic from "next/dynamic";
 
@@ -303,7 +304,7 @@ export default function Home(){
       onCitationClick={async (filename, pages, chunkId) => {
         const chunk = await getChunk(chunkId)
         const keywords = chunk.text
-        setSelectedPdf(`http://localhost:8000/uploads/${encodeURIComponent(filename)}`);
+        setSelectedPdf(`${API_URL}/uploads/${encodeURIComponent(filename)}`);
         setSelectedPages(pages);
         setSelectedChunkId(chunkId);
         setHighlightChunk(chunk.text);

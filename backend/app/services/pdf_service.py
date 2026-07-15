@@ -1,10 +1,12 @@
 from app.models.pdf_document import PDFDocument
 from app.models.pdf_chunk import PDFChunk
 from app.utils.text_chunker import chunk_pages
-from app.utils.config import UPLOAD_DIR
+from app.utils.config import UPLD_DIR
 import os
+from pathlib import Path
 
 from app.services.embedding_service import create_embedding, cosine_similarity, rerank_chunks
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 def save_pdf_document(db, conversation_id: int, filename: str, content: list):
     pdf = PDFDocument(conversation_id=conversation_id, filename=filename, content=content)
@@ -99,10 +101,12 @@ def delete_pdf_service(db, pdf_id: int):
         PDFChunk.pdf_id == pdf_id
     ).delete(synchronize_session=False)
     
-    file_path = os.path.join(UPLOAD_DIR, pdf.filename)
-    
-    if os.path.exists(file_path):
-        os.remove(file_path)
+    UPLOAD_DIR = BASE_DIR / UPLD_DIR
+
+    file_path = UPLOAD_DIR / pdf.filename
+
+    if file_path.exists():
+        file_path.unlink()
 
     db.delete(pdf)
 

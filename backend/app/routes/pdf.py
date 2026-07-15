@@ -6,14 +6,14 @@ from app.utils.text_chunker import chunk_pages
 from app.services.conversation_service import get_conversation
 from app.models.pdf_document import PDFDocument
 from fastapi import Form
-from app.utils.config import UPLOAD_DIR
-
-
+from app.utils.config import UPLD_DIR
+from pathlib import Path
 
 import os
 
 from app.utils.pdf_parser import extract_pages_from_pdf
 
+BASE_DIR = Path(__file__).resolve().parent.parent
 router = APIRouter()
 
 @router.post("/upload")
@@ -21,10 +21,10 @@ router = APIRouter()
 async def upload_pdf(conversation_id: int = Form(...),
                     file: UploadFile = File(...),
                      db: Session = Depends(get_db)):
+    UPLOAD_DIR = BASE_DIR / UPLD_DIR
+    UPLOAD_DIR.mkdir(exist_ok=True)
     
-    os.makedirs(UPLOAD_DIR, exist_ok=True)
-    
-    file_path = f"{UPLOAD_DIR}/{file.filename}"
+    file_path = UPLOAD_DIR / file.filename
     
     with open(file_path, "wb") as f:
         f.write(await file.read())
