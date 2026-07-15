@@ -5,13 +5,13 @@ from jose import jwt, JWTError
 SECRET_KEY = "CHANGE_ME"
 ALGORITHM = "HS256"
 
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+ACCESS_TOKEN_EXPIRE_DAYS = 365
 
 
 def create_access_token(user_id: int):
     
     expire = datetime.now(timezone.utc) + timedelta(
-        minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        days=ACCESS_TOKEN_EXPIRE_DAYS)
     
     payload = {
         "sub": str(user_id),
