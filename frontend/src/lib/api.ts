@@ -1,7 +1,9 @@
 import { APP_DIR_ALIAS } from "next/dist/lib/constants";
 import Stream from "stream";
 
-const API_URL = "http://localhost:8000";
+const API_URL = 
+process.env.NEXT_PUBLIC_API_URL ??
+"http://localhost:8000";
 
 
 export type StreamEvent =
