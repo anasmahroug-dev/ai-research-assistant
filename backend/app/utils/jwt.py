@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta, timezone
-
+import os
 from jose import jwt, JWTError
 
-SECRET_KEY = "CHANGE_ME"
+SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 
 ACCESS_TOKEN_EXPIRE_DAYS = 365
