@@ -1,4 +1,4 @@
-import { FileText, ExternalLink, ChevronRight, Eye } from "lucide-react";
+import { FileText, ChevronRight, Eye } from "lucide-react";
 
 type Props = {
   content: string;
@@ -22,7 +22,7 @@ export default function MessageContent({
     <div className="whitespace-pre-wrap">
       {parts.map((part, index) => {
         const match = part.match(
-          /\[Source: (.*?), Pages?: ([\d,\s]+), Chunk: (\d+)\]/
+          /\[Source:\s*(.*?),\s*Page:\s*([\d,\s]+),\s*Chunk:\s*(\d+)\]/
         );
 
         if (!match) {

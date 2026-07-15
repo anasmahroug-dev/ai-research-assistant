@@ -130,18 +130,57 @@ export default function Home(){
 
   setMessages((prev) => [...prev, botMessage]);
 
-  await sendMessageStream(conversation.id, text, (chunk) => {
-    setMessages((prev) => {
-      const updated = [...prev];
-      const lastMessage = updated[updated.length -1];
-      updated[updated.length -1] = {...lastMessage,
-        message: lastMessage.message + chunk
-      };
-      return updated;
-  
-  });
+  await sendMessageStream(
+    conversation.id,
+    text,
+    (event) => {
 
-  }
+        switch (event.type) {
+
+            case "token":
+
+                setMessages(prev => {
+
+                    const updated = [...prev];
+
+                    const lastMessage =
+                        updated[updated.length - 1];
+
+                    updated[updated.length - 1] = {
+                        ...lastMessage,
+                        message: lastMessage.message + event.data,
+                    };
+
+                    return updated;
+                });
+
+                break;
+
+            case "update":
+
+                setMessages(prev => {
+
+                    const updated = [...prev];
+
+                    const lastMessage =
+                        updated[updated.length - 1];
+
+                    updated[updated.length - 1] = {
+                        ...lastMessage,
+                        message: event.data,
+                    };
+
+                    return updated;
+                });
+
+                break;
+
+            case "done":
+
+                break;
+        }
+
+    }
 );
   
 }

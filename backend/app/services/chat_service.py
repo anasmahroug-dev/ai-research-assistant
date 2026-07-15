@@ -4,8 +4,16 @@ from datetime import datetime, timezone
 from app.services.llm.factory import get_llm_provider
 from app.services.pdf_service import get_conversation_pdfs, build_rag_context, retrieve_relevant_chunks
 from app.services.token_service import count_tokens
+from app.utils.citations import normalize_citations, validate_citations
+import json
+from typing import Any
 
-
+def sse(event: str, data: Any) -> str:
+    return (
+        f"event: {event}\n"
+        f"data: {json.dumps(data)}\n\n"
+    )
+    
 def save_message(db, conversation_id, role: str, content: str):
     msg = Message(conversation_id=conversation_id, role=role, content=content)
     db.add(msg)
@@ -78,9 +86,22 @@ def generate_response_stream(db, conversation_id: int, message: str):
     - Never combine multiple chunks into a single citation.
     - If multiple chunks support the answer, output multiple citations.
     
-    - Format citations exactly like:
+    Citation syntax is STRICT.
+
+    A citation is valid ONLY if it matches EXACTLY this format:
+
     [Source: filename.pdf, Page: X, Chunk: Y]
-    - Every citation MUST begin with "[Source:"
+
+    Examples of INVALID citations:
+    [paper.pdf, Page: 3, Chunk: 12]
+    [Source: paper.pdf, Page: 14, Chunk ID: 337]
+    [Source: paper.pdf, Page: 7-8, Chunk: 337]
+    [Source paper.pdf Page 3]
+    (Source: paper.pdf)
+
+    These are INVALID and MUST NEVER appear.
+
+    If you cannot produce a citation in the exact format, produce no citation at all.
     - Never use any other citation format.
     - Never cite inline.
     - Never invent citations.
@@ -103,14 +124,14 @@ def generate_response_stream(db, conversation_id: int, message: str):
     ANSWER
     ====================
     """
-    
+
     provider = get_llm_provider()
     full_response = ""
     
     for token in provider.stream_chat(prompt):
         full_response += token
-        yield token
-        
+        yield sse("token", token)
+          
     input_tokens = count_tokens(prompt)
     output_tokens = count_tokens(full_response)
     print("\n==== Token Debug ====")
@@ -118,9 +139,14 @@ def generate_response_stream(db, conversation_id: int, message: str):
     print("Output Tokens: ",output_tokens)
     print("Total Tokens: ",input_tokens + output_tokens)
     
+    corrected = normalize_citations(full_response)
+    corrected = validate_citations(corrected)
+    
+    yield sse("update", corrected)
+    yield sse("done", None)
     
            
-    save_message(db, conversation_id, "bot", full_response)
+    save_message(db, conversation_id, "bot", corrected)
             
         
 

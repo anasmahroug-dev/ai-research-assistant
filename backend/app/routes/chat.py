@@ -26,7 +26,9 @@ async def chat(request: ChatRequest, db: Session = Depends(get_db)):
 
     
     return StreamingResponse(generate_response_stream(db, request.conversation_id, request.message), 
-                             media_type="text/plain")
+                             media_type="text/event-stream",
+                             headers={"Cache-Control": "no-cache",
+                                      "Connection": "keep-alive",},)
 
 @router.get("/history/{conversation_id}")
 def get_history(conversation_id: int, db: Session = Depends(get_db)):
