@@ -1,1 +1,0 @@
-UPLD_DIR = "uploads"

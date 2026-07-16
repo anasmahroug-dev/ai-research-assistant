@@ -1,5 +1,5 @@
 "use client";
-
+import {PDF} from "@/types"
 import { useEffect, useState } from "react";
 import { API_URL } from "@/lib/api";
 import Sidebar from "@/components/Sidebar";
@@ -39,7 +39,7 @@ export default function Home(){
   
   const [conversations, setConversations] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
-  const [pdfs, setPdfs] = useState<any[]>([]);
+  const [pdfs, setPdfs] = useState<PDF[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedPdf, setSelectedPdf] = useState<string | null>(null);
@@ -303,8 +303,8 @@ export default function Home(){
       isLoading={isLoading}
       onCitationClick={async (filename, pages, chunkId) => {
         const chunk = await getChunk(chunkId)
-        const keywords = chunk.text
-        setSelectedPdf(`${API_URL}/uploads/${encodeURIComponent(filename)}`);
+        const keywords = chunk.text       
+        setSelectedPdf(chunk.cloudinary_url);
         setSelectedPages(pages);
         setSelectedChunkId(chunkId);
         setHighlightChunk(chunk.text);

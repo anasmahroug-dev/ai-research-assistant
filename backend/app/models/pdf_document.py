@@ -30,3 +30,8 @@ class PDFDocument(Base):
     
     content = Column(JSON)
     
+    cloudinary_url = Column(Text)
+
+    cloudinary_public_id = Column(Text)
+    
+    

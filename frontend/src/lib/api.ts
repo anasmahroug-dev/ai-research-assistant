@@ -1,5 +1,6 @@
 import { APP_DIR_ALIAS } from "next/dist/lib/constants";
 import Stream from "stream";
+import {PDF} from "@/types"
 
 export const API_URL = 
 process.env.NEXT_PUBLIC_API_URL ??
@@ -160,7 +161,7 @@ export async function uploadPDF(conversationId: number, file: File){
     return response.json();
 }
 
-export async function getPdfs(conversationId: number) {
+export async function getPdfs(conversationId: number): Promise<PDF[]> {
 
   const response = await fetch(
     `${API_URL}/pdf/${conversationId}`, {

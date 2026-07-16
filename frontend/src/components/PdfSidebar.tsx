@@ -114,10 +114,7 @@ export default function PdfSidebar({
                     overflow-hidden
                   "
                   onClick={() => {
-                    window.open(
-                      `${API_URL}/uploads/${pdf.filename}`,
-                      "_blank"
-                    );
+                    window.open(pdf.cloudinary_url, "_blank");
                   }}
                 >
                   <FileText size={16} />

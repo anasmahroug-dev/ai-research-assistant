@@ -1,15 +1,13 @@
 from app.models.pdf_document import PDFDocument
 from app.models.pdf_chunk import PDFChunk
 from app.utils.text_chunker import chunk_pages
-from app.utils.config import UPLD_DIR
-import os
+from app.services.cloudinary_service import delete_pdf_from_cloudinary
 from pathlib import Path
 
 from app.services.embedding_service import create_embedding, cosine_similarity, rerank_chunks
-BASE_DIR = Path(__file__).resolve().parent.parent
 
-def save_pdf_document(db, conversation_id: int, filename: str, content: list):
-    pdf = PDFDocument(conversation_id=conversation_id, filename=filename, content=content)
+def save_pdf_document(db, conversation_id: int, filename: str, content: list, cloudinary_url: str, cloudinary_public_id: str):
+    pdf = PDFDocument(conversation_id=conversation_id, filename=filename, content=content, cloudinary_url=cloudinary_url, cloudinary_public_id=cloudinary_public_id)
     db.add(pdf)
     db.commit()
     db.refresh(pdf)
@@ -19,12 +17,17 @@ def get_conversation_pdfs(db, conversation_id: int):
     return (db.query(PDFDocument).filter(PDFDocument.conversation_id == conversation_id).all())
 
 def save_pdf_chunks(db, pdf, chunks):
+    print(len(chunks))
     for index, chunk in enumerate(chunks):
         if index == 0:
             print("========== BEFORE DB ==========")
             print(chunk["text"])
         
+        print("Creating embeddings...")
         embedding = create_embedding(chunk["text"]).tolist()
+        print("Embeddings done.")
+        
+        
         db_chunk = PDFChunk(
             pdf_id=pdf.id,
             conversation_id=pdf.conversation_id,
@@ -35,7 +38,9 @@ def save_pdf_chunks(db, pdf, chunks):
         )
         
         db.add(db_chunk)
+    print("Before commit")
     db.commit()
+    print("After commit")
 
 def retrieve_relevant_chunks(db, conversation_id, query):
     
@@ -101,12 +106,7 @@ def delete_pdf_service(db, pdf_id: int):
         PDFChunk.pdf_id == pdf_id
     ).delete(synchronize_session=False)
     
-    UPLOAD_DIR = BASE_DIR / UPLD_DIR
-
-    file_path = UPLOAD_DIR / pdf.filename
-
-    if file_path.exists():
-        file_path.unlink()
+    delete_pdf_from_cloudinary(pdf.cloudinary_public_id)
 
     db.delete(pdf)
 

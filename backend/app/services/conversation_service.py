@@ -2,7 +2,9 @@ from app.models.conversation import Conversation
 from app.models.message import Message
 from app.models.pdf_document import PDFDocument
 from app.models.pdf_chunk import PDFChunk
+from app.services.cloudinary_service import delete_pdf_from_cloudinary
 from datetime import datetime, timezone
+
 
 
 def create_conversation(db, user_id, title="New Chat"):
@@ -29,6 +31,16 @@ def get_conversation(db,conversation_id: int
     )
     
 def delete_conversation_service(db, conversation_id: int, current_user):
+    pdfs = (
+    db.query(PDFDocument)
+    .filter(PDFDocument.conversation_id == conversation_id)
+    .all()
+    )
+    
+    for pdf in pdfs:
+        if pdf.cloudinary_public_id:
+            delete_pdf_from_cloudinary(pdf.cloudinary_public_id)
+    
     
     db.query(PDFChunk).filter(
         PDFChunk.conversation_id == conversation_id
