@@ -46,6 +46,7 @@ origins = [
 if FRONTEND_URL:
     origins.append(FRONTEND_URL)
 
+print("Allowed origins:", origins)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
