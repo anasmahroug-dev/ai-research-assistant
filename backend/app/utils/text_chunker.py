@@ -1,4 +1,4 @@
-def chunk_pages(pages, chunk_size=750, overlap=150):
+def chunk_pages(pages, chunk_size=1200, overlap=200):
     chunks = []
     for page_data in pages:
         page_number = page_data["page"]

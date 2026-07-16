@@ -18,26 +18,28 @@ def get_conversation_pdfs(db, conversation_id: int):
 
 def save_pdf_chunks(db, pdf, chunks):
     print(len(chunks))
-    for index, chunk in enumerate(chunks):
-        if index == 0:
-            print("========== BEFORE DB ==========")
-            print(chunk["text"])
+    if chunks:
+        
+        print("========== BEFORE DB ==========")
+        print(chunks[0]["text"])
         
         print("Creating embeddings...")
-        embedding = create_embedding(chunk["text"]).tolist()
+        texts = [chunk["text"] for chunk in chunks]
+        embeddings = create_embedding(texts)
         print("Embeddings done.")
-        
-        
-        db_chunk = PDFChunk(
-            pdf_id=pdf.id,
-            conversation_id=pdf.conversation_id,
-            page=chunk["page"],
-            chunk_index=index,
-            text=chunk["text"],
-            embedding=embedding
-        )
-        
-        db.add(db_chunk)
+        db_chunks = []
+        for index, (chunk, embedding) in enumerate(zip(chunks, embeddings)):
+            db_chunks.append(PDFChunk(
+                pdf_id=pdf.id,
+                conversation_id=pdf.conversation_id,
+                page=chunk["page"],
+                chunk_index=index,
+                text=chunk["text"],
+                embedding=embedding.tolist()
+            ))
+            
+    print("Before Bulk insert")
+    db.bulk_save_objects(db_chunks)
     print("Before commit")
     db.commit()
     print("After commit")
@@ -51,14 +53,17 @@ def retrieve_relevant_chunks(db, conversation_id, query):
     
     for pdf in pdfs:
         chunks = (db.query(PDFChunk).filter(PDFChunk.pdf_id == pdf.id).all())
+        if not chunks:
+            continue
+        embeddings = [chunk.embedding for chunk in chunks]
         
-        for chunk in chunks:
+        scores = cosine_similarity(query_embedding, embeddings)
+        
+        for chunk, score  in zip(chunks, scores):
      
-            score = cosine_similarity(query_embedding, chunk.embedding)
-            
             scored_chunks.append({
                 
-                "score": score, 
+                "score": float(score), 
                 "text": chunk.text,
                 "page": chunk.page,
                 "filename": pdf.filename,
@@ -66,7 +71,7 @@ def retrieve_relevant_chunks(db, conversation_id, query):
                 })
             
     
-    semantic_chunks = sorted(scored_chunks, key=lambda x: x["score"], reverse=True)[:20]
+    semantic_chunks = sorted(scored_chunks, key=lambda x: x["score"], reverse=True)[:10]
     reranked_chunks = rerank_chunks(query, semantic_chunks)
     
     top_chunks = reranked_chunks[:5]
