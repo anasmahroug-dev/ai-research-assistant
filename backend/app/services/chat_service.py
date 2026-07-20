@@ -91,12 +91,15 @@ def generate_response_stream(db, conversation_id: int, message: str):
     A citation is valid ONLY if it matches EXACTLY this format:
 
     [Source: filename.pdf, Page: X, Chunk: Y]
+    
+    Always use normal brackets.
 
     Examples of INVALID citations:
     [paper.pdf, Page: 3, Chunk: 12]
     [Source: paper.pdf, Page: 14, Chunk ID: 337]
     [Source: paper.pdf, Page: 7-8, Chunk: 337]
     [Source paper.pdf Page 3]
+   【Source: paper.pdf, Page: 7, Chunk: 337】
     (Source: paper.pdf)
 
     These are INVALID and MUST NEVER appear.
