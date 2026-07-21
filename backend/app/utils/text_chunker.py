@@ -1,4 +1,5 @@
 import re
+from app.utils.pdf_parser import clean_text, split_into_blocks
 
 
 def chunk_pages(pages):
@@ -17,23 +18,24 @@ def chunk_pages(pages):
 
     for page_data in pages:
         page_number = page_data["page"]
-        text = page_data["text"].strip()
+        paragraphs = split_into_blocks(page_data["text"])
 
-        if not text:
+        if not paragraphs:
             continue
-
-        paragraphs = [
-            p.strip()
-            for p in re.split(r"\n\s*\n", text)
-            if p.strip()
-        ]
-
+        
+        
         current_chunk = ""
 
         for paragraph in paragraphs:
 
             if len(paragraph) > target_size:
-
+                if current_chunk:
+                    chunks.append({
+                        "text": clean_text(current_chunk),
+                        "page": page_number,
+                    })
+                    current_chunk = ""
+                    
                 words = paragraph.split()
 
                 current = ""
@@ -43,14 +45,14 @@ def chunk_pages(pages):
                         current += (" " if current else "") + word
                     else:
                         chunks.append({
-                            "text": current,
+                            "text": clean_text(current),
                             "page": page_number,
                         })
                         current = word
 
                 if current:
                     chunks.append({
-                        "text": current,
+                        "text": clean_text(current),
                         "page": page_number,
                     })
 
@@ -58,16 +60,17 @@ def chunk_pages(pages):
 
             if len(current_chunk) + len(paragraph) + 2 <= target_size:
 
-                if current_chunk:
-                    current_chunk += "\n\n"
-
-                current_chunk += paragraph
+                current_chunk = (
+                    current_chunk + "\n\n" + paragraph
+                    if current_chunk
+                    else paragraph
+                )
 
             else:
 
                 if current_chunk:
                     chunks.append({
-                        "text": current_chunk,
+                        "text": clean_text(current_chunk),
                         "page": page_number,
                     })
 
@@ -75,7 +78,7 @@ def chunk_pages(pages):
 
         if current_chunk:
             chunks.append({
-                "text": current_chunk,
+                "text": clean_text(current_chunk),
                 "page": page_number,
             })
 
