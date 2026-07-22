@@ -27,8 +27,8 @@ import {useRouter} from "next/navigation";
 
 import dynamic from "next/dynamic";
 
-const PDFViewer = dynamic(
-  () => import("@/components/PDFViewer"),
+const PdfViewer = dynamic(
+  () => import("@/components/PdfViewer"),
   {
     ssr: false,
   }
@@ -82,6 +82,23 @@ export default function Home(){
 
   }, [user]);
 
+  useEffect(() => {
+  if (!selectedConversation) return;
+
+  const hasProcessing = pdfs.some(
+    (pdf) => pdf.status === "processing"
+  );
+
+  if (!hasProcessing) return;
+
+  const interval = setInterval(() => {
+    refreshPdfs(selectedConversation.id);
+  }, 2000);
+
+  return () => clearInterval(interval);
+
+}, [pdfs, selectedConversation]);
+
   function handleLogout(){
   logout();
   router.push("/");
@@ -96,10 +113,7 @@ export default function Home(){
 
     setMessages(messagesData);
 
-    const pdfsData = 
-    await getPdfs(conversation.id);
-
-    setPdfs(pdfsData);
+    await refreshPdfs(conversation.id);
 
   }
 
@@ -213,13 +227,16 @@ export default function Home(){
 
       await uploadPDF(conversation.id, file);
 
-      const updatedPdfs = await getPdfs(conversation.id);
-
-      setPdfs(updatedPdfs);
+      await refreshPdfs(conversation.id);
     } finally{
       setIsUploadingPdf(false);
     }
     
+  }
+
+  async function refreshPdfs(conversationId: number){
+    const data = await getPdfs(conversationId);
+    setPdfs(data);
   }
 
   async function handleDeleteConversation(conversationId: number){
@@ -314,7 +331,7 @@ export default function Home(){
       </div>
       
       {selectedPdf && (
-        <PDFViewer 
+        <PdfViewer 
          fileUrl={selectedPdf}
           pages={selectedPages}
           highlightChunk={highlightChunk}

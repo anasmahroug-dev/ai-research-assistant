@@ -2,12 +2,15 @@ from app.models.pdf_document import PDFDocument
 from app.models.pdf_chunk import PDFChunk
 from app.utils.text_chunker import chunk_pages
 from app.services.cloudinary_service import delete_pdf_from_cloudinary
+from app.utils.pdf_parser import extract_pages_from_pdf
+from app.database.database import SessionLocal
+from app.enums.pdf_status import PdfStatus
 from pathlib import Path
 
 from app.services.embedding_service import create_embedding, cosine_similarity, rerank_chunks
 
-def save_pdf_document(db, conversation_id: int, filename: str, content: list, cloudinary_url: str, cloudinary_public_id: str):
-    pdf = PDFDocument(conversation_id=conversation_id, filename=filename, content=content, cloudinary_url=cloudinary_url, cloudinary_public_id=cloudinary_public_id)
+def save_pdf_document(db, conversation_id: int, filename: str, cloudinary_url: str, cloudinary_public_id: str, status=PdfStatus.PROCESSING):
+    pdf = PDFDocument(conversation_id=conversation_id, filename=filename, cloudinary_url=cloudinary_url, cloudinary_public_id=cloudinary_public_id, status=status)
     db.add(pdf)
     db.commit()
     db.refresh(pdf)
@@ -18,31 +21,34 @@ def get_conversation_pdfs(db, conversation_id: int):
 
 def save_pdf_chunks(db, pdf, chunks):
     print(len(chunks))
-    if chunks:
+    if not chunks:
+        return
+    
+
         
-        print("========== BEFORE DB ==========")
-        print(chunks[0]["text"])
+    print("========== BEFORE DB ==========")
+    print(chunks[0]["text"])
         
-        print("Creating embeddings...")
-        texts = [chunk["text"] for chunk in chunks]
-        embeddings = create_embedding(texts)
-        print("Embeddings done.")
-        db_chunks = []
-        for index, (chunk, embedding) in enumerate(zip(chunks, embeddings)):
-            db_chunks.append(PDFChunk(
+    print("Creating embeddings...")
+    texts = [chunk["text"] for chunk in chunks]
+    embeddings = create_embedding(texts)
+    print("Embeddings done.")
+    db_chunks = []
+    
+    for index, (chunk, embedding) in enumerate(zip(chunks, embeddings)):
+        db_chunks.append(PDFChunk(
                 pdf_id=pdf.id,
                 conversation_id=pdf.conversation_id,
                 page=chunk["page"],
                 chunk_index=index,
                 text=chunk["text"],
                 embedding=embedding.tolist()
-            ))
+        ))
             
     print("Before Bulk insert")
     db.bulk_save_objects(db_chunks)
-    print("Before commit")
-    db.commit()
-    print("After commit")
+
+    print("Chunks added to session")
 
 def retrieve_relevant_chunks(db, conversation_id, query):
     
@@ -117,5 +123,37 @@ def delete_pdf_service(db, pdf_id: int):
 
     db.commit()
     return True
-    
-    
+
+def process_pdf(pdf_id: int, pdf_bytes: bytes):
+    db = SessionLocal()
+    pdf = None
+    try:
+        pdf = (
+            db.query(PDFDocument)
+            .filter(PDFDocument.id==pdf_id)
+            .first()
+        )
+        if not pdf:
+            return
+        
+        pages = extract_pages_from_pdf(pdf_bytes)
+
+        pdf.content = pages
+
+        chunks = chunk_pages(pages)
+
+        save_pdf_chunks(db, pdf, chunks)
+
+        pdf.status = PdfStatus.READY
+        db.commit()
+
+    except Exception as e:
+        db.rollback()
+        if pdf:  
+            pdf.status = PdfStatus.FAILED
+            db.commit()
+            
+        print(e)    
+        raise
+    finally:
+        db.close()

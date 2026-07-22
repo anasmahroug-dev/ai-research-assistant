@@ -1,12 +1,13 @@
-from fastapi import APIRouter, UploadFile, File, Depends
+from fastapi import APIRouter, UploadFile, File, Depends, Form, BackgroundTasks
 from sqlalchemy.orm import Session
 from app.database.deps import get_db
+
 from app.services.cloudinary_service import upload_file
-from app.services.pdf_service import save_pdf_document, save_pdf_chunks, delete_pdf_service
+from app.services.pdf_service import save_pdf_document, save_pdf_chunks, delete_pdf_service, process_pdf
 from app.utils.text_chunker import chunk_pages
 from app.services.conversation_service import get_conversation
 from app.models.pdf_document import PDFDocument
-from fastapi import Form
+from app.enums.pdf_status import PdfStatus
 
 import tempfile
 import os
@@ -18,6 +19,7 @@ router = APIRouter()
 
 @router.post("/upload")
 async def upload_pdf(
+    background_tasks: BackgroundTasks,
     conversation_id: int = Form(...),
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
@@ -34,7 +36,6 @@ async def upload_pdf(
             temp_file.write(pdf_bytes)
             temp_path = temp_file.name
 
-        pages = extract_pages_from_pdf(pdf_bytes)
 
         cloudinary_file = upload_file(temp_path)
 
@@ -48,17 +49,20 @@ async def upload_pdf(
             db,
             conversation_id,
             file.filename,
-            pages,
             cloudinary_file["url"],
             cloudinary_file["public_id"],
         )
 
-        chunks = chunk_pages(pages)
-        save_pdf_chunks(db, pdf, chunks)
+        background_tasks.add_task(
+            process_pdf,          
+            pdf.id,
+            pdf_bytes
+        )
 
         return {
+            "id": pdf.id,
             "filename": file.filename,
-            "text_preview": pages[0]["text"][:1000],
+            "status": PdfStatus.PROCESSING,
         }
 
     finally:

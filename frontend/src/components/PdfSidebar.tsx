@@ -74,12 +74,12 @@ export default function PdfSidebar({
 
                 <div className="flex-1">
                   <p className="truncate text-sm">
-                    Processing PDF...
-                  </p>
+                  Uploading PDF...
+                </p>
 
-                  <p className="text-xs text-zinc-400">
-                    Chunking & generating embeddings
-                  </p>
+                <p className="text-xs text-zinc-400">
+                  This usually takes a few seconds.
+                </p>
                 </div>
 
                 <LoaderCircle
@@ -92,36 +92,73 @@ export default function PdfSidebar({
             {pdfs.map((pdf) => (
               <div
                 key={pdf.id}
-                className="
+                className={`
                   group
                   flex
                   items-center
                   justify-between
                   bg-zinc-800
-                  hover:bg-zinc-700
                   p-3
                   rounded-lg
                   transition
-                "
+                  ${pdf.status === "ready"
+                    ? "hover:bg-zinc-700"
+                    : "opacity-80"
+                  }
+                `}
               >
                 <div
-                  className="
+                  className={`
                     flex
                     items-center
                     gap-2
                     flex-1
-                    cursor-pointer
+                    
                     overflow-hidden
-                  "
+                    ${
+                    pdf.status === "ready"
+                    ? "cursor-pointer" 
+                    : "cursor-not-allowed opacity-80"
+                  }
+                    `}
+                  
                   onClick={() => {
+                    if (pdf.status !== "ready") return;
+
                     window.open(pdf.cloudinary_url, "_blank");
                   }}
                 >
-                  <FileText size={16} />
+                  {pdf.status === "processing" ? (
+                    <LoaderCircle
+                        size={16}
+                        className="animate-spin"
+                    />
+                ) : pdf.status === "failed" ? (
+                    <FileText
+                        size={16}
+                        className="text-red-400"
+                    />
+                ) : (
+                    <FileText size={16} />
+                )}
 
-                  <span className="truncate">
-                    {pdf.filename}
-                  </span>
+                  <div className="flex flex-col overflow-hidden">
+                    <span className="truncate">
+                      {pdf.filename}
+                    </span>
+
+                    {pdf.status === "processing" && (
+                      <span className="text-xs text-zinc-400">
+                        Processing...
+                      </span>
+                    )}
+
+                    {pdf.status === "failed" && (
+                      <span className="text-xs text-red-400">
+                        Failed
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <div
@@ -133,6 +170,7 @@ export default function PdfSidebar({
                   "
                 >
                   <button
+                  disabled = {pdf.status !== "ready"}
                     onClick={(e) => {
                       e.stopPropagation();
                       setPdfToDelete(pdf);
@@ -141,6 +179,8 @@ export default function PdfSidebar({
                       p-1
                       rounded
                       hover:bg-zinc-600
+                      disabled:opacity-40
+                      disabled:cursor-not-allowed
                     "
                   >
                     <Trash2 size={16} />

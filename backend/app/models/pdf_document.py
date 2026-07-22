@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, Text, JSON, ForeignKey
 from app.database.database import Base
 from sqlalchemy.orm import relationship
+from app.enums.pdf_status import PdfStatus
 
 
 class PDFDocument(Base):
@@ -33,5 +34,11 @@ class PDFDocument(Base):
     cloudinary_url = Column(Text)
 
     cloudinary_public_id = Column(Text)
+    
+    status = Column(
+        String,
+        nullable=False,
+        default=PdfStatus.PROCESSING
+    )
     
     
