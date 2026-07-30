@@ -1,10 +1,9 @@
-from sentence_transformers import SentenceTransformer, CrossEncoder
+from sentence_transformers import SentenceTransformer
 import numpy as np
 from numpy import dot
 from numpy.linalg import norm
 
 model = SentenceTransformer('all-MiniLM-L6-v2')
-reranker = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
 
 def create_embedding(texts):
     
@@ -29,19 +28,3 @@ def cosine_similarity(query_embedding, chunk_embeddings):
 
     return chunk_embeddings @ query_embedding
 
-def rerank_chunks(query, chunks):
-    pairs = [(query, chunk["text"])
-             for chunk in chunks]
-    
-    scores = reranker.predict(pairs, batch_size=16)
-    
-    for chunk, score in zip(chunks, scores):
-        chunk["rerank_score"] = float(score)
-        
-    reranked = sorted(
-        chunks, 
-        key=lambda x: x["rerank_score"],
-        reverse=True
-    )
-    
-    return reranked

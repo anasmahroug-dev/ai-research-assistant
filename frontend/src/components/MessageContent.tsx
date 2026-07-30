@@ -1,4 +1,5 @@
 import { FileText, ChevronRight, Eye } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
 type Props = {
   content: string;
@@ -27,9 +28,12 @@ export default function MessageContent({
 
         if (!match) {
           return (
-            <span key={index}>
+            <ReactMarkdown key={index}
+            components={{
+              p: ({ children}) => <span>{children}</span>
+            }}>
               {part}
-            </span>
+            </ReactMarkdown>
           );
         }
 

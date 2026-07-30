@@ -7,7 +7,7 @@ from app.database.database import SessionLocal
 from app.enums.pdf_status import PdfStatus
 from pathlib import Path
 
-from app.services.embedding_service import create_embedding, cosine_similarity, rerank_chunks
+from app.services.embedding_service import create_embedding, cosine_similarity
 
 def save_pdf_document(db, conversation_id: int, filename: str, cloudinary_url: str, cloudinary_public_id: str, status=PdfStatus.PROCESSING):
     pdf = PDFDocument(conversation_id=conversation_id, filename=filename, cloudinary_url=cloudinary_url, cloudinary_public_id=cloudinary_public_id, status=status)
@@ -23,9 +23,7 @@ def save_pdf_chunks(db, pdf, chunks):
     print(len(chunks))
     if not chunks:
         return
-    
 
-        
     print("========== BEFORE DB ==========")
     print(chunks[0]["text"])
         
@@ -49,40 +47,6 @@ def save_pdf_chunks(db, pdf, chunks):
     db.bulk_save_objects(db_chunks)
 
     print("Chunks added to session")
-
-def retrieve_relevant_chunks(db, conversation_id, query):
-    
-    query_embedding = create_embedding(query)
-    pdfs = get_conversation_pdfs(db, conversation_id)
-    
-    scored_chunks = []
-    
-    for pdf in pdfs:
-        chunks = (db.query(PDFChunk).filter(PDFChunk.pdf_id == pdf.id).all())
-        if not chunks:
-            continue
-        embeddings = [chunk.embedding for chunk in chunks]
-        
-        scores = cosine_similarity(query_embedding, embeddings)
-        
-        for chunk, score  in zip(chunks, scores):
-     
-            scored_chunks.append({
-                
-                "score": float(score), 
-                "text": chunk.text,
-                "page": chunk.page,
-                "filename": pdf.filename,
-                "chunk_id": chunk.id,
-                })
-            
-    
-    semantic_chunks = sorted(scored_chunks, key=lambda x: x["score"], reverse=True)[:10]
-    reranked_chunks = rerank_chunks(query, semantic_chunks)
-    
-    top_chunks = reranked_chunks[:5]
-    
-    return top_chunks
 
 def build_rag_context(chunks):
 

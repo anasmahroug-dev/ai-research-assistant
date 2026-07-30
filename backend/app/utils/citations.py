@@ -32,6 +32,9 @@ def normalize_citations(text: str) -> str:
     # Simple text normalization
     # ----------------------------
 
+    text = text.replace("【", "[")
+    text = text.replace("】", "]")
+    
     text = re.sub(
         r"\[(?!\s*Source:)([^,\]]+?\.pdf)\s*,",
         r"[Source: \1,",

@@ -2,7 +2,8 @@ from app.models.message import Message
 from app.models.conversation import Conversation
 from datetime import datetime, timezone
 from app.services.llm.factory import get_llm_provider
-from app.services.pdf_service import get_conversation_pdfs, build_rag_context, retrieve_relevant_chunks
+from app.services.pdf_service import get_conversation_pdfs, build_rag_context
+from app.services.retrieval.pipeline import retrieve_chunks
 from app.services.token_service import count_tokens
 from app.utils.citations import normalize_citations, validate_citations
 import json
@@ -50,7 +51,7 @@ def build_prompt(history, current_message):
 
 def generate_response_stream(db, conversation_id: int, message: str):
     history = get_conversation_history(db, conversation_id)
-    relevant_chunks = retrieve_relevant_chunks(db, conversation_id, message)
+    relevant_chunks = retrieve_chunks(db, conversation_id, message)
     pdf_context = build_rag_context(relevant_chunks)
     conversation_prompt = build_prompt(history, message)
     
