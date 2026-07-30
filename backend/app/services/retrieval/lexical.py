@@ -1,9 +1,24 @@
 from rank_bm25 import BM25Okapi
 from app.models.pdf_chunk import PDFChunk
 from app.services.pdf_service import get_conversation_pdfs
+import spacy
+
+nlp = spacy.load("en_core_web_sm",
+                 disable=["parser", "ner", "textcat"]
+                 )
+
 
 def tokenize(text: str):
-    return text.lower().split()
+    doc = nlp(text)
+    
+    return [
+    token.lemma_.lower()
+    for token in doc
+    if not token.is_stop
+    and not token.is_punct
+    and not token.is_space
+    and token.lemma_.strip()
+]
 
 
 def retrieve_lexical_chunks(db, conversation_id, query):
@@ -58,15 +73,6 @@ def retrieve_lexical_chunks(db, conversation_id, query):
         reverse=True,
     )[:10]
     
-    print("\n========== BM25 ==========")
 
-    for chunk in top_chunks:
-        print(
-            f"{chunk['score']:.2f} | "
-            f"{chunk['filename']} | "
-            f"page {chunk['page']}"
-        )
-        print(chunk["text"][:150])
-        print()
             
     return top_chunks
